@@ -1,4 +1,9 @@
-export const SITE = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+// Public site address for canonicals, sitemap and JSON-LD. On Vercel, falls back to the production domain
+// Vercel sets automatically, so a missing/blank NEXT_PUBLIC_SITE_URL never ships localhost links.
+export const SITE = (
+  process.env.NEXT_PUBLIC_SITE_URL?.trim() ||
+  (process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` : "http://localhost:3000")
+).replace(/\/$/, "");
 
 // Thin niche pages stay noindex (and out of the sitemap) until they have this many channels.
 export const MIN_INDEXABLE = 5;

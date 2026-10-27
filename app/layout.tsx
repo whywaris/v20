@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Geist, Geist_Mono } from "next/font/google";
 import { getViewer } from "@/lib/auth";
+import { SITE } from "@/lib/seo";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -15,7 +16,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
+  metadataBase: new URL(SITE),
   title: { default: "YouTube Niches Library", template: "%s · YouTube Niches Library" },
   description: "YouTube channels across every niche, with daily stats, what they sell and why they work.",
 };

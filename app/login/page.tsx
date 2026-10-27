@@ -3,12 +3,13 @@ import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { safeNext } from "@/lib/safe-next";
+import { SITE } from "@/lib/seo";
 
 export const metadata: Metadata = { title: "Log in", robots: { index: false } };
 
 async function signInWithGoogle(formData: FormData) {
   "use server";
-  const origin = (await headers()).get("origin") ?? process.env.NEXT_PUBLIC_SITE_URL;
+  const origin = (await headers()).get("origin") ?? SITE;
   const next = safeNext(formData.get("next"));
   const supabase = await createClient();
   const { data, error } = await supabase.auth.signInWithOAuth({
