@@ -20,7 +20,10 @@ export default async function AdminPage() {
     <main className="mx-auto max-w-6xl space-y-10 px-4 py-8">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <h1 className="text-2xl font-semibold">Admin</h1>
-        <p className="text-sm text-neutral-500">{channelCount ?? 0} channels · {niches?.length ?? 0} niches · {userCount ?? 0} users</p>
+        <p className="text-sm text-neutral-500">
+          {channelCount ?? 0} channels · {niches?.length ?? 0} niches · {userCount ?? 0} users ·{" "}
+          <Link href="/admin/posts" className="underline">Blog posts</Link>
+        </p>
       </div>
 
       <div className="grid gap-10 md:grid-cols-2">
@@ -53,7 +56,10 @@ export default async function AdminPage() {
           <tbody>
             {recent?.map((c) => (
               <tr key={c.handle} className="border-t">
-                <td className="py-2"><Link href={`/channel/${c.handle}`} className="hover:underline">{c.title}</Link></td>
+                <td className="py-2">
+                  <Link href={`/channel/${c.handle}`} className="hover:underline">{c.title}</Link>
+                  <Link href={`/admin/channel/${c.handle}`} className="ml-2 text-xs text-neutral-500 underline">edit</Link>
+                </td>
                 <td>{compact(c.subscribers)}</td>
                 <td>{c.status}</td>
                 <td>{c.last_synced_at ? new Date(c.last_synced_at).toISOString().slice(0, 16).replace("T", " ") : "–"}</td>

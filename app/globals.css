@@ -24,3 +24,18 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Blog post body (markdown HTML); Tailwind resets these elements. */
+.prose-post { line-height: 1.75; }
+.prose-post > * + * { margin-top: 1em; }
+.prose-post h2 { font-size: 1.5rem; font-weight: 700; margin-top: 2em; }
+.prose-post h3 { font-size: 1.25rem; font-weight: 600; margin-top: 1.5em; }
+.prose-post ul { list-style: disc; padding-left: 1.5em; }
+.prose-post ol { list-style: decimal; padding-left: 1.5em; }
+.prose-post a { text-decoration: underline; }
+.prose-post blockquote { border-left: 3px solid currentColor; opacity: .8; padding-left: 1em; }
+.prose-post code { font-family: var(--font-geist-mono); font-size: .9em; }
+.prose-post pre { overflow-x: auto; padding: 1em; border: 1px solid #8884; border-radius: .5rem; }
+.prose-post img { border-radius: .5rem; }
+.prose-post table { width: 100%; border-collapse: collapse; }
+.prose-post th, .prose-post td { border-bottom: 1px solid #8884; padding: .4em; text-align: left; }

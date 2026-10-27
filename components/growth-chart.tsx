@@ -15,8 +15,8 @@ export function GrowthChart({ points, label }: { points: Point[]; label: string 
   return (
     <figure>
       <svg viewBox={`0 0 ${W} ${H}`} className="w-full" role="img" aria-label={`${label} from ${compact(points[0].value)} on ${points[0].date} to ${compact(values.at(-1))} on ${points.at(-1)!.date}`}>
-        {[max, (max + min) / 2, min].map((v) => (
-          <g key={v} className="text-neutral-400">
+        {[max, (max + min) / 2, min].map((v, i) => (
+          <g key={i} className="text-neutral-400">
             <line x1={L} x2={W} y1={y(v)} y2={y(v)} stroke="currentColor" strokeOpacity="0.25" />
             <text x={L - 6} y={y(v) + 4} textAnchor="end" fontSize="11" fill="currentColor">{compact(v)}</text>
           </g>

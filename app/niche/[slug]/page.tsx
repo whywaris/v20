@@ -6,6 +6,8 @@ import { createClient } from "@/lib/supabase/server";
 import { compact } from "@/lib/format";
 import { CHANNEL_CARD_COLUMNS, ChannelCard, JsonLd, type ChannelCardData } from "@/components/channel-card";
 import { MIN_INDEXABLE, SITE } from "@/lib/seo";
+import { getViewer } from "@/lib/auth";
+import { AdSlot } from "@/components/ad-slot";
 
 type Params = { params: Promise<{ slug: string }> };
 
@@ -40,6 +42,7 @@ export default async function NichePage({ params }: Params) {
   const data = await getNiche((await params).slug);
   if (!data) notFound();
   const { niche, channels, children, parent } = data;
+  const viewer = await getViewer();
 
   const subs = channels.map((c) => c.subscribers ?? 0).sort((a, b) => a - b);
   const median = subs.length ? subs[Math.floor(subs.length / 2)] : null;
@@ -76,6 +79,9 @@ export default async function NichePage({ params }: Params) {
 
       <p className="text-sm">
         <Link href={`/fastest-growing/${niche.slug}`} className="underline">Fastest growing {niche.name} channels this month</Link>
+        {niche.rpm_low != null && <>{" · "}<Link href={`/youtube-rpm/${niche.slug}`} className="underline">{niche.name} RPM: ${niche.rpm_low}–${niche.rpm_high}</Link></>}
+        {" · "}<Link href={`/outliers?niche=${niche.slug}`} className="underline">Outlier videos</Link>
+        {viewer.user && <>{" · "}<a href={`/api/export?niche=${niche.slug}`} className="underline">Export CSV{viewer.isPro ? "" : " (Pro)"}</a></>}
       </p>
 
       {children.length > 0 && (
@@ -93,6 +99,7 @@ export default async function NichePage({ params }: Params) {
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{channels.map((c) => <ChannelCard key={c.handle} c={c} />)}</div>
         ) : <p className="text-neutral-500">No channels in this niche yet.</p>}
       </section>
+      <AdSlot hidden={viewer.isPro} />
     </main>
   );
 }

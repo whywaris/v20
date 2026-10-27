@@ -8,6 +8,10 @@ import { CHANNEL_CARD_COLUMNS, ChannelCard, JsonLd, type ChannelCardData } from 
 import { GrowthChart } from "@/components/growth-chart";
 import { SITE } from "@/lib/seo";
 import type { FoundLink } from "@/lib/links";
+import { getViewer } from "@/lib/auth";
+import { AdSlot } from "@/components/ad-slot";
+import { AffiliateBox } from "@/components/affiliate-box";
+import { SaveButton } from "./save-button";
 
 type Props = { params: Promise<{ handle: string }>; searchParams: Promise<{ range?: string; metric?: string }> };
 const RANGES = { "30d": 30, "90d": 90, all: 3650 } as const;
@@ -43,7 +47,11 @@ export default async function ChannelPage({ params, searchParams }: Props) {
   const since = new Date(Date.now() - days * 86_400_000).toISOString().slice(0, 10);
 
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const viewer = await getViewer();
+  const user = viewer.user;
+  const { data: savedRow } = user
+    ? await supabase.from("saved_channels").select("channel_id").eq("channel_id", c.id).maybeSingle()
+    : { data: null };
 
   // RLS returns nothing for stats/analysis/offers/funnels when logged out; the queries are the same either way.
   const [{ data: nicheRows }, { data: videos }, { data: stats }, { data: analysis }, { data: offers }, { data: funnel }] = await Promise.all([
@@ -118,6 +126,10 @@ export default async function ChannelPage({ params, searchParams }: Props) {
               <Link key={n.slug} href={`/niche/${n.slug}`} className="rounded-full border px-3 py-0.5 text-sm hover:bg-neutral-100 dark:hover:bg-neutral-900">{n.name}</Link>
             ))}
           </div>
+        </div>
+        <div className="ml-auto flex items-center gap-3">
+          {viewer.isStaff && <Link href={`/admin/channel/${c.handle}`} className="text-sm underline">Edit</Link>}
+          {user && <SaveButton channelId={c.id} initiallySaved={!!savedRow} />}
         </div>
       </header>
 
@@ -243,6 +255,9 @@ export default async function ChannelPage({ params, searchParams }: Props) {
           </Link>
         </section>
       )}
+
+      <AffiliateBox isAiAvatar={!!c.is_ai_avatar} isFaceless={!!c.is_faceless} />
+      <AdSlot hidden={viewer.isPro} />
 
       {similar && similar.length > 0 && (
         <Section title={`Similar ${primary?.name} channels`}>
