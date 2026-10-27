@@ -1,103 +1,86 @@
-import Image from "next/image";
+import type { Metadata } from "next";
+import Link from "next/link";
+import { createClient } from "@/lib/supabase/server";
+import { CHANNEL_CARD_COLUMNS, ChannelCard, type ChannelCardData } from "@/components/channel-card";
 
-export default function Home() {
+const FREE_LIMIT = 12; // logged-out visitors see this many, like the reference site
+const PAGE_SIZE = 48;
+const SORTS = {
+  subs: { column: "subscribers", ascending: false, label: "Subscribers" },
+  views: { column: "total_views", ascending: false, label: "Total views" },
+  newest: { column: "created_at_yt", ascending: false, label: "Newest channels" },
+  name: { column: "title", ascending: true, label: "Name (A–Z)" },
+} as const;
+
+// Search/filter/sort URLs all canonicalize to the home page.
+export const metadata: Metadata = { alternates: { canonical: "/" } };
+
+type Search ={ q?: string; niche?: string; sort?: string; page?: string };
+
+export default async function Home({ searchParams }: { searchParams: Promise<Search> }) {
+  const { q = "", niche = "", sort = "subs", page = "1" } = await searchParams;
+  const sortBy = SORTS[sort as keyof typeof SORTS] ?? SORTS.subs;
+  const pageNum = Math.max(1, Number(page) || 1);
+
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  const { data: niches } = await supabase.from("niches").select("id, slug, name").order("name");
+  const nicheId = niches?.find((n) => n.slug === niche)?.id;
+
+  let query = supabase
+    .from("channels")
+    .select(nicheId ? `${CHANNEL_CARD_COLUMNS}, channel_niches!inner(niche_id)` : CHANNEL_CARD_COLUMNS, { count: "exact" })
+    .eq("status", "active")
+    .order(sortBy.column, { ascending: sortBy.ascending, nullsFirst: false });
+  if (nicheId) query = query.eq("channel_niches.niche_id", nicheId);
+  if (q.trim()) query = query.ilike("title", `%${q.trim().replace(/[%_\\]/g, "\\$&")}%`);
+  const from = user ? (pageNum - 1) * PAGE_SIZE : 0;
+  const { data, count } = await query.range(from, from + (user ? PAGE_SIZE : FREE_LIMIT) - 1);
+  const channels = (data ?? []) as unknown as ChannelCardData[];
+  const total = count ?? 0;
+  const pageHref = (p: number) => `/?${new URLSearchParams({ ...(q && { q }), ...(niche && { niche }), sort, page: String(p) })}`;
+
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+    <main className="mx-auto max-w-6xl px-4 py-10">
+      <h1 className="text-4xl font-bold">YouTube channels in every niche</h1>
+      <p className="mt-3 text-neutral-500">Daily stats, latest uploads, what each channel sells and why it works. {total} channels.</p>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+      <form className="mt-8 flex flex-wrap gap-3" role="search">
+        <input name="q" defaultValue={q} placeholder="Search channels" aria-label="Search channels" className="min-w-0 flex-1 rounded-md border bg-transparent px-3 py-2" />
+        <select name="niche" defaultValue={niche} aria-label="Niche" className="rounded-md border bg-transparent px-3 py-2">
+          <option value="">All niches</option>
+          {niches?.map((n) => <option key={n.slug} value={n.slug}>{n.name}</option>)}
+        </select>
+        <select name="sort" defaultValue={sort} aria-label="Sort by" className="rounded-md border bg-transparent px-3 py-2">
+          {Object.entries(SORTS).map(([k, s]) => <option key={k} value={k}>{s.label}</option>)}
+        </select>
+        <button className="rounded-md border px-4 py-2">Apply</button>
+      </form>
+
+      <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {channels.map((c) => <ChannelCard key={c.handle} c={c} />)}
+      </div>
+      {!channels.length && <p className="mt-6 text-neutral-500">No channels found.</p>}
+
+      {!user && total > FREE_LIMIT && (
+        <div className="mt-8 rounded-lg border border-dashed p-6 text-center">
+          <p className="text-xl font-semibold">+{total - FREE_LIMIT} more channels</p>
+          <p className="mt-1 text-sm text-neutral-500">Log in with Google to see every channel, growth charts and analysis. Free.</p>
+          <Link href="/login" className="mt-4 inline-block rounded-md bg-neutral-900 px-4 py-2 text-sm font-medium text-white dark:bg-white dark:text-neutral-900">Unlock all channels</Link>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+      )}
+
+      {user && total > PAGE_SIZE && (
+        <nav className="mt-8 flex justify-center gap-3 text-sm" aria-label="Pages">
+          {pageNum > 1 && <Link href={pageHref(pageNum - 1)} className="rounded-md border px-3 py-1.5">Previous</Link>}
+          <span className="px-3 py-1.5 text-neutral-500">Page {pageNum} of {Math.ceil(total / PAGE_SIZE)}</span>
+          {pageNum * PAGE_SIZE < total && <Link href={pageHref(pageNum + 1)} className="rounded-md border px-3 py-1.5">Next</Link>}
+        </nav>
+      )}
+
+      <p className="mt-12 text-sm">
+        <Link href="/niches" className="underline">Browse all niches</Link>
+      </p>
+    </main>
   );
 }
