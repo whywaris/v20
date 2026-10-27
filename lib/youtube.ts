@@ -67,7 +67,7 @@ export async function resolveChannel(ref: ChannelRef): Promise<YtChannel | null>
 
 export type YtVideo = {
   id: string;
-  snippet: { title: string; publishedAt: string; thumbnails: Record<string, { url: string }> };
+  snippet: { title: string; description: string; publishedAt: string; thumbnails: Record<string, { url: string }> };
   contentDetails: { duration: string };
   statistics: { viewCount?: string };
 };

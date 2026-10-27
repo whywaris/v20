@@ -80,6 +80,8 @@ export default async function Home({ searchParams }: { searchParams: Promise<Sea
 
       <p className="mt-12 text-sm">
         <Link href="/niches" className="underline">Browse all niches</Link>
+        {" · "}
+        <Link href="/fastest-growing" className="underline">Fastest growing channels</Link>
       </p>
     </main>
   );

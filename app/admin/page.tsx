@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { compact } from "@/lib/format";
-import { AddChannelsForm, AddNicheForm, SyncButton } from "./forms";
+import { AddChannelsForm, AddNicheForm, AnalyzeForm, SyncButton } from "./forms";
 
 export const metadata: Metadata = { title: "Admin", robots: { index: false } };
 
@@ -38,6 +38,12 @@ export default async function AdminPage() {
         <h2 className="font-medium">Daily sync</h2>
         <p className="text-sm text-neutral-500">Runs automatically every day at 03:00 UTC on Vercel. Each sync stores one stats snapshot per channel per day.</p>
         <SyncButton />
+      </section>
+
+      <section className="space-y-3">
+        <h2 className="font-medium">AI analysis</h2>
+        <p className="text-sm text-neutral-500">Detects links, the store page and offers, then writes the persona, title patterns and why it works. Runs daily for the 20 oldest channels.</p>
+        <AnalyzeForm />
       </section>
 
       <section>

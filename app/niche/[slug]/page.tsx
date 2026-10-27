@@ -74,6 +74,10 @@ export default async function NichePage({ params }: Params) {
         <div><dt className="text-sm text-neutral-500">Biggest channel</dt><dd className="truncate text-2xl font-semibold">{channels[0]?.title ?? "–"}</dd></div>
       </dl>
 
+      <p className="text-sm">
+        <Link href={`/fastest-growing/${niche.slug}`} className="underline">Fastest growing {niche.name} channels this month</Link>
+      </p>
+
       {children.length > 0 && (
         <section>
           <h2 className="mb-2 font-semibold">Sub-niches</h2>

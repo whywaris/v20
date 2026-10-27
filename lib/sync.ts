@@ -75,5 +75,8 @@ export async function syncAll(db: SupabaseClient) {
   const foundIds = new Set(found.map((c) => c.id));
   const gone = ids.filter((id) => !foundIds.has(id));
   if (gone.length) await db.from("channels").update({ status: "removed" }).in("yt_channel_id", gone);
+
+  const { error: growthError } = await db.rpc("refresh_growth");
+  if (growthError) throw growthError;
   return { synced: found.length, removed: gone.length };
 }

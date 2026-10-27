@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { analyzeBatch } from "@/lib/analyze";
 import { requireStaff } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { syncAll, syncChannels } from "@/lib/sync";
@@ -48,6 +49,16 @@ export async function addNiche(_: ActionState, formData: FormData): Promise<Acti
   });
   revalidatePath("/admin");
   return { message: error ? error.message : `Niche "${name}" added (/niche/${slug}).` };
+}
+
+// One @handle, or empty for the 10 least recently analyzed channels.
+export async function runAnalysis(_: ActionState, formData: FormData): Promise<ActionState> {
+  await requireStaff();
+  const handle = String(formData.get("handle") ?? "").trim();
+  const results = await analyzeBatch(createAdminClient(), 10, handle || undefined);
+  revalidatePath("/", "layout");
+  const failed = results.filter((r) => !r.ok);
+  return { message: `Analyzed ${results.length - failed.length}.${failed.length ? ` Failed: ${failed.map((f) => `${f.handle} (${f.error})`).join("; ")}` : ""}` };
 }
 
 export async function runSync(): Promise<ActionState> {

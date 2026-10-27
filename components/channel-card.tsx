@@ -10,9 +10,11 @@ export type ChannelCardData = {
   video_count: number | null;
   language: string | null;
   country: string | null;
+  tagline: string | null;
+  subs_gain_30d: number | null;
 };
 
-export const CHANNEL_CARD_COLUMNS = "handle, title, avatar_url, subscribers, total_views, video_count, language, country";
+export const CHANNEL_CARD_COLUMNS = "handle, title, avatar_url, subscribers, total_views, video_count, language, country, tagline, subs_gain_30d";
 
 export function ChannelCard({ c }: { c: ChannelCardData }) {
   return (
@@ -27,6 +29,12 @@ export function ChannelCard({ c }: { c: ChannelCardData }) {
           <p className="truncate text-sm text-neutral-500">@{c.handle}{c.country ? ` · ${c.country}` : ""}</p>
         </div>
       </div>
+      {c.tagline && <p className="mt-3 line-clamp-2 text-sm">{c.tagline}</p>}
+      {c.subs_gain_30d != null && c.subs_gain_30d !== 0 && (
+        <p className={`mt-1 text-xs font-medium ${c.subs_gain_30d > 0 ? "text-green-700 dark:text-green-400" : "text-red-600"}`}>
+          {c.subs_gain_30d > 0 ? "+" : ""}{compact(c.subs_gain_30d)} subs this month
+        </p>
+      )}
       <dl className="mt-4 grid grid-cols-3 text-sm">
         <div><dt className="text-neutral-500">Subs</dt><dd className="font-medium">{compact(c.subscribers)}</dd></div>
         <div><dt className="text-neutral-500">Views</dt><dd className="font-medium">{compact(c.total_views)}</dd></div>

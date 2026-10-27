@@ -12,12 +12,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     db.from("niches").select("slug, is_indexable, channel_niches(count)"),
   ]);
 
+  const indexableNiches = (niches ?? [])
+    .filter((n) => n.is_indexable || ((n.channel_niches as unknown as { count: number }[])[0]?.count ?? 0) >= MIN_INDEXABLE);
+
   return [
     { url: SITE, changeFrequency: "daily", priority: 1 },
     { url: `${SITE}/niches`, changeFrequency: "weekly", priority: 0.8 },
-    ...(niches ?? [])
-      .filter((n) => n.is_indexable || ((n.channel_niches as unknown as { count: number }[])[0]?.count ?? 0) >= MIN_INDEXABLE)
-      .map((n) => ({ url: `${SITE}/niche/${n.slug}`, changeFrequency: "daily" as const, priority: 0.8 })),
+    { url: `${SITE}/fastest-growing`, changeFrequency: "daily", priority: 0.8 },
+    ...indexableNiches.flatMap((n) => [
+      { url: `${SITE}/niche/${n.slug}`, changeFrequency: "daily" as const, priority: 0.8 },
+      { url: `${SITE}/fastest-growing/${n.slug}`, changeFrequency: "daily" as const, priority: 0.7 },
+    ]),
     ...(channels ?? []).map((c) => ({
       url: `${SITE}/channel/${c.handle}`,
       lastModified: c.last_synced_at ?? undefined,

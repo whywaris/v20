@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
-import { addChannels, addNiche, runSync } from "./actions";
+import { addChannels, addNiche, runAnalysis, runSync } from "./actions";
 
 type Niche = { id: number; name: string };
 
@@ -36,6 +36,17 @@ export function AddNicheForm({ niches }: { niches: Niche[] }) {
       <input name="description" placeholder="Short description (optional)" className={input} />
       <button className={button} disabled={pending}>{pending ? "Saving…" : "Add niche"}</button>
       {state && <p className="text-sm text-neutral-500">{state.message}</p>}
+    </form>
+  );
+}
+
+export function AnalyzeForm() {
+  const [state, action, pending] = useActionState(runAnalysis, null);
+  return (
+    <form action={action} className="flex flex-wrap items-center gap-3">
+      <input name="handle" placeholder="@handle (empty = next 10)" className={`${input} max-w-xs`} />
+      <button className={button} disabled={pending}>{pending ? "Analyzing…" : "Run AI analysis"}</button>
+      {state && <p className="w-full text-sm text-neutral-500">{state.message}</p>}
     </form>
   );
 }
