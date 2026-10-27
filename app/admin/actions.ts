@@ -2,39 +2,46 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { analyzeBatch } from "@/lib/analyze";
+import { analyzeBatch, countUnanalyzed } from "@/lib/analyze";
 import { requireStaff } from "@/lib/auth";
+import { chunk, mapPool } from "@/lib/pool";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { syncAll, syncChannels } from "@/lib/sync";
-import { parseChannelInput, resolveChannel, type YtChannel } from "@/lib/youtube";
+import { parseChannelInput, resolveChannel } from "@/lib/youtube";
 
 export type ActionState = { message: string } | null;
 
-// One channel URL/@handle/id per line, all tagged with the chosen niche.
+// One channel URL/@handle/id per line (up to 500), all tagged with the chosen niche.
 export async function addChannels(_: ActionState, formData: FormData): Promise<ActionState> {
   await requireStaff();
-  const lines = String(formData.get("channels") ?? "").split(/\r?\n/).map((l) => l.trim()).filter(Boolean).slice(0, 100);
+  const deadline = Date.now() + 240_000;
+  const input = lines(formData.get("channels")).slice(0, 500);
   const nicheId = Number(formData.get("niche_id")) || null;
 
-  const found: YtChannel[] = [];
-  const failed: string[] = [];
-  for (const line of lines) {
+  const resolved = await mapPool(input, 5, async (line) => {
     const ref = parseChannelInput(line);
-    const channel = ref ? await resolveChannel(ref).catch(() => null) : null;
-    if (channel) found.push(channel);
-    else failed.push(line);
-  }
+    return ref ? resolveChannel(ref) : null;
+  });
+  const found = resolved.flatMap((r) => ("ok" in r && r.ok && r.value ? [r.value] : []));
+  const failed = input.filter((_, i) => { const r = resolved[i]; return !("ok" in r && r.ok && r.value); });
 
   const db = createAdminClient();
-  const ids = await syncChannels(db, found);
+  const { ids, videosSkipped } = await syncChannels(db, found, () => true, deadline);
   if (nicheId && ids.length) {
-    await db.from("channel_niches").upsert(
-      ids.map((channel_id) => ({ channel_id, niche_id: nicheId, is_primary: true })),
-      { onConflict: "channel_id,niche_id" },
-    );
+    for (const part of chunk(ids, 500)) {
+      await db.from("channel_niches").upsert(
+        part.map((channel_id) => ({ channel_id, niche_id: nicheId, is_primary: true })),
+        { onConflict: "channel_id,niche_id", ignoreDuplicates: true },
+      );
+    }
   }
   revalidatePath("/", "layout");
-  return { message: `Added ${ids.length}.${failed.length ? ` Not found: ${failed.join(", ")}` : ""}` };
+  return {
+    message: `Added ${ids.length}.` +
+      (videosSkipped ? ` Videos for ${videosSkipped} will load in the daily sync.` : "") +
+      (failed.length ? ` Not found (${failed.length}): ${failed.slice(0, 20).join(", ")}${failed.length > 20 ? "…" : ""}` : "") +
+      " Next: Run AI analysis.",
+  };
 }
 
 export async function addNiche(_: ActionState, formData: FormData): Promise<ActionState> {
@@ -52,14 +59,20 @@ export async function addNiche(_: ActionState, formData: FormData): Promise<Acti
   return { message: error ? error.message : `Niche "${name}" added (/niche/${slug}).` };
 }
 
-// One @handle, or empty for the 10 least recently analyzed channels.
+// One @handle, or empty: as many unanalyzed/oldest channels as fit in ~4 minutes. Click again for more.
 export async function runAnalysis(_: ActionState, formData: FormData): Promise<ActionState> {
   await requireStaff();
   const handle = String(formData.get("handle") ?? "").trim();
-  const results = await analyzeBatch(createAdminClient(), 10, handle || undefined);
+  const db = createAdminClient();
+  const results = await analyzeBatch(db, 300, handle || undefined, Date.now() + 240_000);
   revalidatePath("/", "layout");
   const failed = results.filter((r) => !r.ok);
-  return { message: `Analyzed ${results.length - failed.length}.${failed.length ? ` Failed: ${failed.map((f) => `${f.handle} (${f.error})`).join("; ")}` : ""}` };
+  const remaining = await countUnanalyzed(db);
+  return {
+    message: `Analyzed ${results.length - failed.length}.` +
+      (failed.length ? ` Failed: ${failed.slice(0, 5).map((f) => `${f.handle} (${f.error})`).join("; ")}` : "") +
+      (remaining ? ` ${remaining} never analyzed yet: click again.` : " All channels analyzed."),
+  };
 }
 
 const lines = (v: FormDataEntryValue | null) => String(v ?? "").split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
@@ -141,5 +154,5 @@ export async function runSync(): Promise<ActionState> {
   await requireStaff();
   const r = await syncAll(createAdminClient());
   revalidatePath("/", "layout");
-  return { message: `Synced ${r.synced} channels, ${r.removed} marked removed.` };
+  return { message: `Synced ${r.synced} channels, ${r.removed} marked removed. Videos refreshed for ${r.videosRefreshed}${r.videosSkipped ? ` (${r.videosSkipped} left for tomorrow)` : ""}.` };
 }

@@ -13,7 +13,7 @@ export function AddChannelsForm({ niches }: { niches: Niche[] }) {
   return (
     <form action={action} className="space-y-3">
       <textarea name="channels" rows={6} required className={input}
-        placeholder={"One per line:\nhttps://www.youtube.com/@handle\n@handle\nUCxxxxxxxxxxxxxxxxxxxxxx"} />
+        placeholder={"One per line, up to 500:\nhttps://www.youtube.com/@handle\n@handle\nUCxxxxxxxxxxxxxxxxxxxxxx"} />
       <select name="niche_id" className={input} defaultValue="">
         <option value="">No niche</option>
         {niches.map((n) => <option key={n.id} value={n.id}>{n.name}</option>)}
@@ -44,7 +44,7 @@ export function AnalyzeForm() {
   const [state, action, pending] = useActionState(runAnalysis, null);
   return (
     <form action={action} className="flex flex-wrap items-center gap-3">
-      <input name="handle" placeholder="@handle (empty = next 10)" className={`${input} max-w-xs`} />
+      <input name="handle" placeholder="@handle (empty = next batch)" className={`${input} max-w-xs`} />
       <button className={button} disabled={pending}>{pending ? "Analyzing…" : "Run AI analysis"}</button>
       {state && <p className="w-full text-sm text-neutral-500">{state.message}</p>}
     </form>

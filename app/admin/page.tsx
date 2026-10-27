@@ -5,15 +5,17 @@ import { compact } from "@/lib/format";
 import { AddChannelsForm, AddNicheForm, AnalyzeForm, SyncButton } from "./forms";
 
 export const metadata: Metadata = { title: "Admin", robots: { index: false } };
+export const maxDuration = 300; // bulk add / analyze actions run up to ~4 minutes
 
 // Access is enforced by middleware (/admin) and requireStaff() in every action.
 export default async function AdminPage() {
   const supabase = await createClient();
-  const [{ data: niches }, { data: recent }, { count: channelCount }, { count: userCount }] = await Promise.all([
+  const [{ data: niches }, { data: recent }, { count: channelCount }, { count: userCount }, { count: unanalyzed }] = await Promise.all([
     supabase.from("niches").select("id, name").order("name"),
     supabase.from("channels").select("handle, title, subscribers, last_synced_at, status").order("created_at", { ascending: false }).limit(20),
     supabase.from("channels").select("*", { count: "exact", head: true }),
     supabase.from("profiles").select("*", { count: "exact", head: true }),
+    supabase.from("channels").select("*", { count: "exact", head: true }).eq("status", "active").is("analyzed_at", null),
   ]);
 
   return (
@@ -45,7 +47,12 @@ export default async function AdminPage() {
 
       <section className="space-y-3">
         <h2 className="font-medium">AI analysis</h2>
-        <p className="text-sm text-neutral-500">Detects links, the store page and offers, then writes the persona, title patterns and why it works. Runs daily for the 20 oldest channels.</p>
+        <p className="text-sm text-neutral-500">
+          Detects links, the store page and offers, then writes the persona, title patterns and why it works.
+          Runs daily (never-analyzed first). Empty = as many as fit in ~4 minutes (about 100); click again for more,
+          or run <code>npm run analyze:all</code> on your computer for big batches.
+        </p>
+        <p className="text-sm font-medium">{unanalyzed ?? 0} channels not analyzed yet</p>
         <AnalyzeForm />
       </section>
 

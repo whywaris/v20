@@ -4,6 +4,7 @@ import { aiJson } from "@/lib/ai";
 import { fetchPublicHtml, htmlToText } from "@/lib/fetch-page";
 import { classify, collectLinks, extractUrls, pickLanding } from "@/lib/links";
 import { fetchChannelsById, fetchLatestVideos, parseDuration } from "@/lib/youtube";
+import { mapPool } from "@/lib/pool";
 
 type Analysis = {
   tagline: string;
@@ -146,22 +147,27 @@ export async function analyzeChannel(db: SupabaseClient, channel: { id: number; 
   return a;
 }
 
-// Analyze the channels that were never analyzed or are oldest, a few at a time to stay within time limits.
-export async function analyzeBatch(db: SupabaseClient, limit = 20, handle?: string) {
+const ANALYZE_CONCURRENCY = 6;
+
+// Analyze never-analyzed channels first, then the oldest, 6 at a time until `deadline`.
+// Channels not started before the deadline are left for the next run.
+export async function analyzeBatch(db: SupabaseClient, limit = 20, handle?: string, deadline = Infinity) {
   let q = db.from("channels").select("id, yt_channel_id, handle, subscribers, total_views, video_count, created_at_yt").eq("status", "active");
   q = handle ? q.eq("handle", handle.toLowerCase().replace(/^@/, "")) : q.order("analyzed_at", { ascending: true, nullsFirst: true }).limit(limit);
   const { data, error } = await q;
   if (error) throw error;
 
-  const results: { handle: string; ok: boolean; error?: string }[] = [];
-  for (let i = 0; i < data.length; i += 4) {
-    const chunk = data.slice(i, i + 4);
-    const settled = await Promise.allSettled(chunk.map((c) => analyzeChannel(db, c)));
-    settled.forEach((s, j) => results.push({ handle: chunk[j].handle, ok: s.status === "fulfilled", ...(s.status === "rejected" && { error: String(s.reason) }) }));
-  }
+  const settled = await mapPool(data, ANALYZE_CONCURRENCY, (c) => analyzeChannel(db, c), deadline);
+  const results = settled.flatMap((s, i) => "skipped" in s ? [] : [{ handle: data[i].handle as string, ok: s.ok, ...(!s.ok && { error: String(s.error) }) }]);
+
   // Failed channels go to the back of the queue instead of blocking it every run.
-  const failed = data.filter((_, i) => !results[i].ok).map((c) => c.id);
+  const failed = data.filter((_, i) => { const s = settled[i]; return "ok" in s && !s.ok; }).map((c) => c.id);
   if (failed.length) await db.from("channels").update({ analyzed_at: new Date().toISOString() }).in("id", failed);
   for (const r of results) if (!r.ok) console.error("analyze failed", r.handle, r.error);
   return results;
+}
+
+export async function countUnanalyzed(db: SupabaseClient) {
+  const { count } = await db.from("channels").select("*", { count: "exact", head: true }).eq("status", "active").is("analyzed_at", null);
+  return count ?? 0;
 }

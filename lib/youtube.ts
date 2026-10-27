@@ -1,4 +1,6 @@
 // YouTube Data API v3. Every call here costs 1 quota unit (free quota: 10,000/day).
+import { chunk, mapPool } from "./pool.ts";
+
 const API = "https://www.googleapis.com/youtube/v3";
 
 export type ChannelRef = { id: string } | { handle: string } | { username: string };
@@ -48,14 +50,14 @@ export type YtChannel = {
 
 const CHANNEL_PARTS = "snippet,statistics,contentDetails";
 
-// Up to 50 ids per call.
+// 50 ids per call, 5 calls at a time. A failed batch throws: better no sync than marking live channels removed.
 export async function fetchChannelsById(ids: string[]): Promise<YtChannel[]> {
-  const out: YtChannel[] = [];
-  for (let i = 0; i < ids.length; i += 50) {
-    const r = await yt<{ items?: YtChannel[] }>("channels", { part: CHANNEL_PARTS, id: ids.slice(i, i + 50).join(",") });
-    out.push(...(r.items ?? []));
-  }
-  return out;
+  const results = await mapPool(chunk(ids, 50), 5, (batch) =>
+    yt<{ items?: YtChannel[] }>("channels", { part: CHANNEL_PARTS, id: batch.join(",") }));
+  return results.flatMap((r) => {
+    if (!("ok" in r) || !r.ok) throw ("error" in r ? r.error : new Error("channel batch skipped"));
+    return r.value.items ?? [];
+  });
 }
 
 export async function resolveChannel(ref: ChannelRef): Promise<YtChannel | null> {

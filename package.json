@@ -6,7 +6,8 @@
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "analyze:all": "node scripts/analyze-all.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",
