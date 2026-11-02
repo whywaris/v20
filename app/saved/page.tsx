@@ -1,32 +1,42 @@
-import type { Metadata } from "next";
-import Link from "next/link";
-import { redirect } from "next/navigation";
-import { getViewer } from "@/lib/auth";
-import { createClient } from "@/lib/supabase/server";
-import { CHANNEL_CARD_COLUMNS, ChannelCard, type ChannelCardData } from "@/components/channel-card";
+'use client';
 
-export const metadata: Metadata = { title: "Saved channels", robots: { index: false } };
+import React from 'react';
+import Link from 'next/link';
+import { Bookmark, Sparkles, LogIn, ArrowRight } from 'lucide-react';
 
-export default async function SavedPage() {
-  const v = await getViewer();
-  if (!v.user) redirect("/login?next=/saved");
-  const supabase = await createClient();
-  const { data } = await supabase.from("saved_channels")
-    .select(`created_at, channels(${CHANNEL_CARD_COLUMNS})`).order("created_at", { ascending: false });
-  const channels = (data ?? []).map((r) => r.channels as unknown as ChannelCardData).filter(Boolean);
-
+export default function SavedPage() {
   return (
-    <main className="mx-auto max-w-6xl px-4 py-8">
-      <h1 className="text-3xl font-bold">Saved channels</h1>
-      <p className="mt-2 text-sm text-neutral-500">
-        {channels.length}{v.isPro ? "" : " of 10"} saved.{" "}
-        {!v.isPro && <Link href="/pricing" className="underline">Pro saves unlimited channels.</Link>}
-      </p>
-      {channels.length ? (
-        <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{channels.map((c) => <ChannelCard key={c.handle} c={c} />)}</div>
-      ) : (
-        <p className="mt-6 text-neutral-500">Nothing saved yet. Use ☆ Save on any channel page.</p>
-      )}
-    </main>
+    <div className="mx-auto max-w-4xl px-4 sm:px-6 py-16 text-center">
+      <div className="glass rounded-3xl p-10 sm:p-14 border border-[var(--border-line)] max-w-2xl mx-auto">
+        <div className="size-16 rounded-2xl bg-[var(--brand-accent)]/10 text-[var(--brand-mark)] flex items-center justify-center mx-auto mb-6 shadow-sm border border-[var(--brand-accent)]/20">
+          <Bookmark className="size-8" />
+        </div>
+
+        <h1 className="text-2xl sm:text-3xl font-extrabold text-[var(--text-ink)] mb-3">
+          Your Saved Swipe File &amp; Channels
+        </h1>
+
+        <p className="text-[14.5px] text-[var(--text-muted)] leading-relaxed mb-8 max-w-md mx-auto">
+          Sign in with your Google account to bookmark viral videos, save high-performing channels, and organize your research into custom folders.
+        </p>
+
+        <button
+          onClick={() => alert('Supabase Google OAuth popup will trigger here once keys are added to .env.local')}
+          className="btn-accent h-11 px-8 rounded-full text-[13.5px] font-bold inline-flex items-center gap-2 shadow-lg hover:scale-105 transition-all"
+        >
+          <LogIn className="size-4" />
+          Sign In with Google to View Saved Items
+        </button>
+
+        <div className="mt-8 pt-6 border-t border-[var(--border-line)]">
+          <Link
+            href="/"
+            className="text-xs font-semibold text-[var(--text-muted)] hover:text-[var(--brand-mark)] inline-flex items-center gap-1"
+          >
+            &larr; Return to Channel Directory
+          </Link>
+        </div>
+      </div>
+    </div>
   );
 }

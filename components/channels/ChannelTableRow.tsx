@@ -1,0 +1,106 @@
+'use client';
+
+import React from 'react';
+import Link from 'next/link';
+import { Channel } from '@/types';
+import { formatNumber, formatCurrency } from '@/lib/utils';
+import { CheckCircle2, Lock, Bot, User, ArrowRight } from 'lucide-react';
+
+interface Props {
+  channel: Channel;
+}
+
+export default function ChannelTableRow({ channel }: Props) {
+  const channelSlug = channel.slug || channel.id || channel.handle.replace('@', '');
+  const isAvatar = channel.format === 'avatar' || Boolean(channel.avatarStyle);
+
+  return (
+    <tr className="border-b border-[var(--border-line)] hover:bg-[var(--bg-surface-2)]/50 transition-colors">
+      {/* Channel info */}
+      <td className="py-3 px-4">
+        <div className="flex items-center gap-3">
+          <img
+            src={channel.thumbnail || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=80&auto=format&fit=crop&q=60'}
+            alt={channel.title}
+            width={40}
+            height={40}
+            loading="lazy"
+            decoding="async"
+            className="size-10 rounded-lg object-cover border border-[var(--border-line)] shrink-0"
+            onError={(e) => {
+              (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=80&auto=format&fit=crop&q=60';
+            }}
+          />
+          <div className="min-w-0">
+            <Link
+              href={`/channel/${channelSlug}`}
+              className="font-bold text-sm text-[var(--text-ink)] hover:text-[var(--brand-mark)] transition-colors truncate block"
+            >
+              {channel.title}
+            </Link>
+            <div className="flex items-center gap-1.5 text-xs text-[var(--text-muted)]">
+              <span>{channel.handle}</span>
+              {channel.monetization && (
+                <CheckCircle2 className="size-3 text-emerald-500 fill-emerald-500/20" />
+              )}
+            </div>
+          </div>
+        </div>
+      </td>
+
+      {/* Format */}
+      <td className="py-3 px-3">
+        {isAvatar ? (
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[10.5px] font-semibold rounded-md bg-purple-500/10 text-purple-400 border border-purple-500/20">
+            <Bot className="size-3" /> AI Avatar
+          </span>
+        ) : (
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[10.5px] font-semibold rounded-md bg-blue-500/10 text-blue-400 border border-blue-500/20">
+            <User className="size-3" /> Faceless
+          </span>
+        )}
+      </td>
+
+      {/* Primary Niche */}
+      <td className="py-3 px-3 text-xs text-[var(--text-muted)] max-w-[140px] truncate">
+        {channel.categories?.[0] || 'General'}
+      </td>
+
+      {/* Subscribers */}
+      <td className="py-3 px-3 num-mono text-sm font-bold text-[var(--text-ink)]">
+        {formatNumber(channel.subscribers)}
+      </td>
+
+      {/* Avg Views */}
+      <td className="py-3 px-3 num-mono text-sm text-[var(--text-muted)]">
+        {formatNumber(channel.avgViews || 0)}
+      </td>
+
+      {/* Est. RPM */}
+      <td className="py-3 px-3 num-mono text-xs font-semibold text-emerald-500">
+        ${channel.estimatedRpm?.avg || 8.5}
+      </td>
+
+      {/* Est. Monthly Revenue */}
+      <td className="py-3 px-3 num-mono text-sm font-bold text-emerald-500">
+        {channel.estimatedMonthlyRevenueUsd ? (
+          formatCurrency(channel.estimatedMonthlyRevenueUsd)
+        ) : (
+          <span className="inline-flex items-center gap-1 text-xs text-[var(--text-muted)] font-normal">
+            <Lock className="size-3" /> Locked
+          </span>
+        )}
+      </td>
+
+      {/* Action */}
+      <td className="py-3 px-4 text-right">
+        <Link
+          href={`/channel/${channelSlug}`}
+          className="btn-accent h-7 px-3 text-xs rounded-full font-semibold inline-flex items-center gap-1"
+        >
+          View <ArrowRight className="size-3" />
+        </Link>
+      </td>
+    </tr>
+  );
+}

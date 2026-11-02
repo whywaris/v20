@@ -1,69 +1,85 @@
-import type { Metadata } from "next";
-import Link from "next/link";
-import { Geist, Geist_Mono } from "next/font/google";
-import { getViewer } from "@/lib/auth";
-import { SITE } from "@/lib/seo";
-import "./globals.css";
+import type { Metadata } from 'next';
+import { Plus_Jakarta_Sans } from 'next/font/google';
+import './globals.css';
+import Header from '@/components/layout/Header';
+import Footer from '@/components/layout/Footer';
+import { ToastProvider } from '@/components/ui/Toast';
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+const fontSans = Plus_Jakarta_Sans({
+  subsets: ['latin'],
+  variable: '--font-sans',
+  display: 'swap',
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(SITE),
-  title: { default: "YouTube Niches Library", template: "%s · YouTube Niches Library" },
-  description: "YouTube channels across every niche, with daily stats, what they sell and why they work.",
+  title: 'YT Niches · YouTube Channels & Viral Niches Directory',
+  description: 'Track 7,400+ YouTube channels across 2,700+ niches with estimated RPM, revenue analytics, and 20,000+ viral video swipe files.',
+  metadataBase: new URL('https://ytniches.com'),
+  alternates: {
+    canonical: 'https://ytniches.com/',
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
+  openGraph: {
+    title: 'YT Niches · YouTube Channels & Viral Niches Directory',
+    description: 'Track 7,400+ YouTube channels across 2,700+ niches with estimated RPM and viral swipe files.',
+    url: 'https://ytniches.com/',
+    siteName: 'YT Niches',
+    locale: 'en_US',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'YT Niches · YouTube Channels & Viral Niches Directory',
+    description: 'Track 7,400+ YouTube channels across 2,700+ niches with estimated RPM and viral swipe files.',
+  }
 };
 
-const NAV = [
-  ["/niches", "Niches"],
-  ["/fastest-growing", "Fastest growing"],
-  ["/outliers", "Outliers"],
-  ["/tools", "Tools"],
-  ["/blog", "Blog"],
-  ["/ask", "Ask"],
-  ["/pricing", "Pricing"],
-] as const;
-
-export default async function RootLayout({
+export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
-  const viewer = await getViewer();
-
+}) {
   return (
-    <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        <header className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-6 gap-y-2 px-4 py-4">
-          <Link href="/" className="font-semibold">Niches Library</Link>
-          <nav aria-label="Main" className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-neutral-600 dark:text-neutral-400">
-            {NAV.map(([href, label]) => <Link key={href} href={href} className="hover:text-neutral-900 dark:hover:text-white">{label}</Link>)}
-            {viewer.isStaff && <Link href="/admin" className="hover:text-neutral-900 dark:hover:text-white">Admin</Link>}
-          </nav>
-          <div className="ml-auto flex items-center gap-3 text-sm">
-            {viewer.user ? (
-              <>
-                <Link href="/saved" className="hover:underline">Saved</Link>
-                <Link href="/account" className="rounded-md border px-3 py-1.5">{viewer.plan === "pro" ? "Pro" : "Account"}</Link>
-              </>
-            ) : (
-              <Link href="/login" className="rounded-md border px-3 py-1.5">Log in</Link>
-            )}
-          </div>
-        </header>
-        {children}
-        <footer className="mx-auto mt-16 max-w-6xl border-t px-4 py-8 text-xs text-neutral-500">
-          Channel stats from YouTube via the YouTube Data API. Personas, niches, offers and analysis are our own research.
-        </footer>
+    <html lang="en" data-theme="dark" className={`${fontSans.variable} scroll-smooth`}>
+      <head>
+        {/* Preconnect & DNS-Prefetch Resource Hints for YouTube CDN Assets */}
+        <link rel="preconnect" href="https://yt3.ggpht.com" crossOrigin="anonymous" />
+        <link rel="preconnect" href="https://yt3.googleusercontent.com" crossOrigin="anonymous" />
+        <link rel="preconnect" href="https://i.ytimg.com" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://yt3.ggpht.com" />
+        <link rel="dns-prefetch" href="https://yt3.googleusercontent.com" />
+        <link rel="dns-prefetch" href="https://i.ytimg.com" />
+        <link rel="dns-prefetch" href="https://images.unsplash.com" />
+
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              try {
+                var t = localStorage.getItem('yt_theme') || localStorage.getItem('nv_theme');
+                if (t === 'light' || t === 'dark') {
+                  document.documentElement.setAttribute('data-theme', t);
+                }
+              } catch (e) {}
+            `,
+          }}
+        />
+      </head>
+      <body className="flex min-h-screen flex-col">
+        <ToastProvider>
+          <Header />
+          <main className="flex-1">{children}</main>
+          <Footer />
+        </ToastProvider>
       </body>
     </html>
   );

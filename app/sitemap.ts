@@ -1,37 +1,63 @@
-import type { MetadataRoute } from "next";
-import { createClient } from "@supabase/supabase-js";
-import { MIN_INDEXABLE, SITE, TOOLS } from "@/lib/seo";
+import fs from 'node:fs';
+import path from 'node:path';
+import { MetadataRoute } from 'next';
+import { BLOG_POSTS } from './blog/page';
 
-export const revalidate = 86400;
+export default function sitemap(): MetadataRoute.Sitemap {
+  const baseUrl = 'https://ytniches.com';
+  const dataDir = path.join(process.cwd(), 'data');
 
-// ponytail: one file holds up to 50k URLs; switch to generateSitemaps() past that.
-export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const db = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!);
-  const [{ data: channels }, { data: niches }, { data: posts }] = await Promise.all([
-    db.from("channels").select("handle, last_synced_at").eq("status", "active").limit(49_000),
-    db.from("niche_stats").select("slug, is_indexable, channels, rpm_low"),
-    db.from("posts").select("slug, updated_at").eq("status", "published"),
-  ]);
-
-  const indexableNiches = (niches ?? []).filter((n) => n.is_indexable || n.channels >= MIN_INDEXABLE);
-  const page = (path: string, priority: number, changeFrequency: "daily" | "weekly" | "monthly" = "daily") =>
-    ({ url: `${SITE}${path}`, priority, changeFrequency });
-
-  return [
-    page("", 1),
-    page("/niches", 0.8, "weekly"),
-    page("/fastest-growing", 0.8),
-    page("/outliers", 0.7),
-    page("/pricing", 0.5, "monthly"),
-    page("/tools", 0.6, "monthly"),
-    ...TOOLS.map((t) => page(t.href, 0.7, "weekly")),
-    page("/blog", 0.6, "weekly"),
-    ...indexableNiches.flatMap((n) => [
-      page(`/niche/${n.slug}`, 0.8),
-      page(`/fastest-growing/${n.slug}`, 0.7),
-      ...(n.rpm_low != null ? [page(`/youtube-rpm/${n.slug}`, 0.7, "weekly")] : []),
-    ]),
-    ...(posts ?? []).map((p) => ({ ...page(`/blog/${p.slug}`, 0.7, "monthly"), lastModified: p.updated_at })),
-    ...(channels ?? []).map((c) => ({ ...page(`/channel/${c.handle}`, 0.6), lastModified: c.last_synced_at ?? undefined })),
+  const staticRoutes: MetadataRoute.Sitemap = [
+    { url: baseUrl, lastModified: new Date(), changeFrequency: 'daily', priority: 1.0 },
+    { url: `${baseUrl}/niche`, lastModified: new Date(), changeFrequency: 'daily', priority: 0.9 },
+    { url: `${baseUrl}/outliers`, lastModified: new Date(), changeFrequency: 'daily', priority: 0.9 },
+    { url: `${baseUrl}/blog`, lastModified: new Date(), changeFrequency: 'weekly', priority: 0.8 },
+    { url: `${baseUrl}/privacy`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.5 },
+    { url: `${baseUrl}/terms`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.5 },
+    { url: `${baseUrl}/disclaimer`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.5 },
   ];
+
+  // Blog posts
+  const blogRoutes: MetadataRoute.Sitemap = BLOG_POSTS.map((post) => ({
+    url: `${baseUrl}/blog/${post.slug}`,
+    lastModified: new Date(),
+    changeFrequency: 'monthly',
+    priority: 0.7,
+  }));
+
+  // Niches (index all 2,706 niches)
+  let nicheRoutes: MetadataRoute.Sitemap = [];
+  const nichesFile = path.join(dataDir, 'unified_niches.json');
+  try {
+    if (fs.existsSync(nichesFile)) {
+      const niches = JSON.parse(fs.readFileSync(nichesFile, 'utf8'));
+      nicheRoutes = niches.map((n: any) => ({
+        url: `${baseUrl}/niche/${n.slug}`,
+        lastModified: new Date(),
+        changeFrequency: 'weekly',
+        priority: 0.8,
+      }));
+    }
+  } catch (e) {
+    console.error('Error reading niches for sitemap:', e);
+  }
+
+  // Top Channels (index up to 5,000 top channels)
+  let channelRoutes: MetadataRoute.Sitemap = [];
+  const channelsFile = path.join(dataDir, 'unified_channels.json');
+  try {
+    if (fs.existsSync(channelsFile)) {
+      const channels = JSON.parse(fs.readFileSync(channelsFile, 'utf8'));
+      channelRoutes = channels.slice(0, 5000).map((c: any) => ({
+        url: `${baseUrl}/channel/${c.id || c.handle.replace('@', '')}`,
+        lastModified: new Date(),
+        changeFrequency: 'weekly',
+        priority: 0.7,
+      }));
+    }
+  } catch (e) {
+    console.error('Error reading channels for sitemap:', e);
+  }
+
+  return [...staticRoutes, ...blogRoutes, ...nicheRoutes, ...channelRoutes];
 }

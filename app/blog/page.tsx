@@ -1,32 +1,182 @@
-import type { Metadata } from "next";
-import Link from "next/link";
-import { createClient } from "@/lib/supabase/server";
+import React from 'react';
+import Link from 'next/link';
+import { Metadata } from 'next';
+import { Calendar, Clock, ArrowRight, BookOpen, Sparkles } from 'lucide-react';
 
 export const metadata: Metadata = {
-  title: "Blog: YouTube Niche Guides",
-  description: "Guides on picking YouTube niches, AI avatar and faceless channels, and how channels make money.",
-  alternates: { canonical: "/blog" },
+  title: 'YouTube Niche Intelligence Blog & Guides · YT Niches',
+  description: 'Data-driven guides, RPM benchmarks, and case studies on growing and monetizing faceless YouTube channels in 2026.',
+  alternates: {
+    canonical: 'https://ytniches.com/blog'
+  }
 };
 
-export default async function BlogPage() {
-  const supabase = await createClient();
-  const { data: posts } = await supabase.from("posts").select("slug, title, description, published_at")
-    .eq("status", "published").order("published_at", { ascending: false });
+export interface BlogPost {
+  slug: string;
+  title: string;
+  excerpt: string;
+  category: string;
+  date: string;
+  readTime: string;
+  coverImage: string;
+}
 
+export const BLOG_POSTS: BlogPost[] = [
+  {
+    slug: 'top-high-rpm-youtube-niches-2026',
+    title: 'Top 10 High RPM YouTube Niches in 2026 (Real Data from 7,400+ Channels)',
+    excerpt: 'An exhaustive analysis of real YouTube AdSense RPM rates across Finance, Tech, History, and Spirituality. See which niches make $15-$25 per thousand views.',
+    category: 'Monetization & RPM',
+    date: 'Oct 24, 2026',
+    readTime: '8 min read',
+    coverImage: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&auto=format&fit=crop&q=60'
+  },
+  {
+    slug: 'how-to-build-faceless-history-channel-ai',
+    title: 'How to Build a 100K Subscriber Faceless History Channel Using AI Tools',
+    excerpt: 'Step-by-step case study deconstructing how channels like Chloe VS History and The Crystalier generate millions of views with AI scripts and cinematic visuals.',
+    category: 'Case Studies',
+    date: 'Oct 20, 2026',
+    readTime: '12 min read',
+    coverImage: 'https://images.unsplash.com/photo-1461360370896-922624d12aa1?w=800&auto=format&fit=crop&q=60'
+  },
+  {
+    slug: 'viral-youtube-title-formulas-deconstructed',
+    title: '20 Viral YouTube Title Formulas Deconstructed from 20,000 Outlier Videos',
+    excerpt: 'Stop guessing your video titles. Here are the 20 psychological curiosity-gap formulas responsible for over 500 million views across faceless YouTube channels.',
+    category: 'Title Blueprints',
+    date: 'Oct 15, 2026',
+    readTime: '10 min read',
+    coverImage: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=60'
+  },
+  {
+    slug: 'monetizing-youtube-beyond-adsense-ebooks-funnels',
+    title: 'How Faceless Channels Make $10,000/Month Selling Digital Products on Gumroad',
+    excerpt: 'Why relying solely on AdSense is leaving 80% of your revenue on the table. A breakdown of digital cookbooks, survival guides, and Notion bundles.',
+    category: 'Digital Products',
+    date: 'Oct 10, 2026',
+    readTime: '9 min read',
+    coverImage: 'https://images.unsplash.com/photo-1553729459-efe14ef6055d?w=800&auto=format&fit=crop&q=60'
+  }
+];
+
+export default function BlogHubPage() {
   return (
-    <main className="mx-auto max-w-3xl px-4 py-10">
-      <h1 className="text-3xl font-bold">Blog</h1>
-      {posts?.length ? (
-        <ul className="mt-6 divide-y">
-          {posts.map((p) => (
-            <li key={p.slug} className="py-5">
-              <Link href={`/blog/${p.slug}`} className="text-xl font-semibold hover:underline">{p.title}</Link>
-              {p.description && <p className="mt-1 text-neutral-600 dark:text-neutral-400">{p.description}</p>}
-              {p.published_at && <p className="mt-1 text-xs text-neutral-500">{new Date(p.published_at).toISOString().slice(0, 10)}</p>}
-            </li>
-          ))}
-        </ul>
-      ) : <p className="mt-6 text-neutral-500">No posts yet.</p>}
-    </main>
+    <div className="mx-auto max-w-7xl px-4 sm:px-6 py-10">
+      
+      {/* 1. Schema.org CollectionPage & BreadcrumbList */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'CollectionPage',
+            name: 'YouTube Niche Intelligence Blog & Guides',
+            description: 'Data-driven guides, RPM benchmarks, and case studies on growing and monetizing faceless YouTube channels.',
+            url: 'https://ytniches.com/blog',
+            numberOfItems: BLOG_POSTS.length
+          })
+        }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'BreadcrumbList',
+            itemListElement: [
+              {
+                '@type': 'ListItem',
+                position: 1,
+                name: 'Home',
+                item: 'https://ytniches.com/'
+              },
+              {
+                '@type': 'ListItem',
+                position: 2,
+                name: 'Blog',
+                item: 'https://ytniches.com/blog'
+              }
+            ]
+          })
+        }}
+      />
+
+      {/* Semantic Breadcrumb Navigation */}
+      <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-xs text-[var(--text-muted)] mb-6">
+        <Link href="/" className="hover:text-[var(--text-ink)] transition-colors">Home</Link>
+        <span className="text-[var(--border-line-strong)]">/</span>
+        <span className="text-[var(--text-ink)] font-semibold" aria-current="page">Blog</span>
+      </nav>
+
+      {/* Blog Hero */}
+      <div className="mb-12 border-b border-[var(--border-line)] pb-8">
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[12px] font-semibold bg-[var(--brand-accent)]/10 text-[var(--brand-mark)] border border-[var(--brand-accent)]/20 mb-3">
+          <BookOpen className="size-3.5" />
+          The Niche Intelligence Journal
+        </div>
+        <h1 className="text-3xl sm:text-4xl font-extrabold text-[var(--text-ink)] tracking-tight">
+          YouTube Growth, RPM &amp; Niche Playbooks
+        </h1>
+        <p className="text-[15.5px] text-[var(--text-muted)] mt-2 max-w-2xl">
+          Actionable blueprints and deep data breakdowns based on 7,400+ tracked YouTube channels and 20,000+ viral outlier videos.
+        </p>
+      </div>
+
+      {/* Featured Articles Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        {BLOG_POSTS.map((post) => (
+          <article
+            key={post.slug}
+            className="glass-card rounded-2xl overflow-hidden flex flex-col group"
+          >
+            <div className="relative aspect-[16/9] w-full overflow-hidden bg-black/20">
+              <img
+                src={post.coverImage}
+                alt={post.title}
+                className="size-full object-cover group-hover:scale-105 transition-transform duration-300"
+              />
+              <span className="absolute top-3 left-3 px-2.5 py-1 text-[11px] font-semibold rounded-md bg-black/60 text-white backdrop-blur-md">
+                {post.category}
+              </span>
+            </div>
+
+            <div className="p-6 flex-1 flex flex-col justify-between">
+              <div>
+                <div className="flex items-center gap-3 text-[12px] text-[var(--text-muted)] mb-2.5">
+                  <span className="flex items-center gap-1">
+                    <Calendar className="size-3.5" />
+                    {post.date}
+                  </span>
+                  <span>&bull;</span>
+                  <span className="flex items-center gap-1">
+                    <Clock className="size-3.5" />
+                    {post.readTime}
+                  </span>
+                </div>
+
+                <Link href={`/blog/${post.slug}`}>
+                  <h2 className="text-xl font-bold text-[var(--text-ink)] group-hover:text-[var(--brand-mark)] transition-colors leading-snug mb-3">
+                    {post.title}
+                  </h2>
+                </Link>
+
+                <p className="text-[13.5px] text-[var(--text-muted)] leading-relaxed mb-6">
+                  {post.excerpt}
+                </p>
+              </div>
+
+              <Link
+                href={`/blog/${post.slug}`}
+                className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-[var(--brand-mark)] hover:underline pt-4 border-t border-[var(--border-line)]"
+              >
+                Read Full Blueprint <ArrowRight className="size-3.5" />
+              </Link>
+            </div>
+          </article>
+        ))}
+      </div>
+
+    </div>
   );
 }
