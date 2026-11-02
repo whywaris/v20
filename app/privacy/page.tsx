@@ -1,130 +1,167 @@
 import React from 'react';
 import Link from 'next/link';
 import { Metadata } from 'next';
-import { Shield, ArrowLeft, Lock, Eye, FileText, CheckCircle2 } from 'lucide-react';
+import { Shield } from 'lucide-react';
+import { LegalPage, Section } from '@/components/layout/LegalPage';
+import { CONTACT_EMAIL, OPERATOR_NAME } from '@/lib/site';
 
 export const metadata: Metadata = {
   title: 'Privacy Policy · YT Niches',
-  description: 'Privacy Policy for YT Niches (ytniches.com). Learn how we collect, protect, and handle your data and Google authentication.',
+  description:
+    'Privacy Policy for YT Niches (ytniches.com): what data we collect, Google AdSense and DoubleClick cookies, third-party advertising, and your rights.',
   alternates: {
     canonical: 'https://ytniches.com/privacy',
   },
 };
 
+const LAST_UPDATED = 'November 2, 2026';
+
 export default function PrivacyPolicyPage() {
-  const lastUpdated = 'October 27, 2026';
-
   return (
-    <div className="mx-auto max-w-4xl px-4 sm:px-6 py-12">
-      
-      {/* Back button */}
-      <Link
-        href="/"
-        className="inline-flex items-center gap-1.5 text-xs font-medium text-[var(--text-muted)] hover:text-[var(--text-ink)] mb-6 transition-colors"
-      >
-        <ArrowLeft className="size-3.5" /> Back to Home
-      </Link>
-
-      {/* Header */}
-      <div className="mb-10 border-b border-[var(--border-line)] pb-8">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-[var(--brand-accent)]/10 text-[var(--brand-mark)] border border-[var(--brand-accent)]/20 mb-3">
-          <Shield className="size-3.5" /> Legal &amp; Transparency
-        </div>
-        <h1 className="text-3xl sm:text-4xl font-extrabold text-[var(--text-ink)] tracking-tight">
-          Privacy Policy
-        </h1>
-        <p className="text-xs text-[var(--text-muted)] mt-2">
-          Effective Date: {lastUpdated} &bull; Canonical URL: https://ytniches.com/privacy
+    <LegalPage
+      icon={Shield}
+      badge="Legal & Transparency"
+      title="Privacy Policy"
+      subtitle={`Effective date: ${LAST_UPDATED} · https://ytniches.com/privacy`}
+    >
+      <Section title="1. Who we are">
+        <p>
+          YT Niches (&quot;we&quot;, &quot;our&quot;, &quot;us&quot;) is an independent research website at{' '}
+          <strong>https://ytniches.com</strong>, run by {OPERATOR_NAME}. This policy explains what information we
+          collect when you visit, how it is used, and the choices you have. Contact:{' '}
+          <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>.
         </p>
-      </div>
+      </Section>
 
-      {/* Content */}
-      <div className="prose prose-invert max-w-none text-[14.5px] leading-relaxed text-[var(--text-ink)] space-y-8">
-        
-        <section>
-          <h2 className="text-xl font-bold text-[var(--text-ink)] mb-3 flex items-center gap-2">
-            1. Introduction
-          </h2>
-          <p className="text-[var(--text-muted)]">
-            Welcome to <strong>YT Niches</strong> (&quot;we,&quot; &quot;our,&quot; or &quot;us&quot;), accessible via <strong>https://ytniches.com/</strong>. We respect your personal privacy and are committed to protecting any information you share with us. This Privacy Policy details our practices concerning data collection, use, and disclosure when you browse our directory, utilize our swipe file, or sign in via Google OAuth.
-          </p>
-        </section>
+      <Section title="2. Information we collect">
+        <ul>
+          <li>
+            <strong>No account required.</strong> You can browse the whole site without signing up. We do not currently
+            offer user accounts, so we do not store names, passwords or profile data.
+          </li>
+          <li>
+            <strong>Server logs.</strong> Our hosting provider, Vercel, automatically records technical data such as IP
+            address, browser type, device type, referring page, pages requested and time of request. These logs are used
+            for security and to keep the site running.
+          </li>
+          <li>
+            <strong>Messages you send us.</strong> If you email us or use the contact form (which opens your own email
+            app), we receive your name, email address and message.
+          </li>
+          <li>
+            <strong>Browser storage.</strong> Your theme choice (dark/light) is stored in your own browser and never sent
+            to us.
+          </li>
+          <li>
+            <strong>Advertising cookies.</strong> Google and other ad vendors may collect information through cookies, as
+            described in section 4.
+          </li>
+        </ul>
+        <p>
+          The channel information on this site is about public YouTube channels and comes from publicly visible YouTube
+          data, not from our visitors. Channel owners can ask us to correct or remove it (see section 8).
+        </p>
+      </Section>
 
-        <section>
-          <h2 className="text-xl font-bold text-[var(--text-ink)] mb-3 flex items-center gap-2">
-            2. Information We Collect
-          </h2>
-          <p className="text-[var(--text-muted)] mb-3">
-            We collect minimal information necessary to deliver our analytics and personalized features:
-          </p>
-          <ul className="list-disc pl-5 space-y-2 text-[var(--text-muted)]">
-            <li>
-              <strong>Google Account Information (OAuth):</strong> When you choose to authenticate via Google to unlock deep growth metrics or bookmark items, we receive your email address, full name, and avatar picture provided by Google. We never request, access, or store your Google password.
-            </li>
-            <li>
-              <strong>Saved Items &amp; Research:</strong> Channels, swipe videos, and custom collections you save while authenticated are stored securely in our database (powered by Supabase).
-            </li>
-            <li>
-              <strong>Usage Analytics &amp; Cookies:</strong> Anonymous device information, browser type, referring URLs, and interaction timestamps to optimize platform speed and user experience.
-            </li>
-          </ul>
-        </section>
+      <Section title="3. How we use information">
+        <ul>
+          <li>To operate, secure and improve the website.</li>
+          <li>To reply to your messages and handle correction, removal or privacy requests.</li>
+          <li>To show advertising that keeps the site free (section 4).</li>
+        </ul>
+        <p>We do not sell your personal information.</p>
+      </Section>
 
-        <section>
-          <h2 className="text-xl font-bold text-[var(--text-ink)] mb-3 flex items-center gap-2">
-            3. How We Use Your Information
-          </h2>
-          <ul className="list-disc pl-5 space-y-2 text-[var(--text-muted)]">
-            <li>To provide, maintain, and personalize your access to full YouTube channel stats and daily growth history.</li>
-            <li>To persist your saved folders, bookmarked swipe-file videos, and custom watchlists.</li>
-            <li>To send optional weekly niche intelligence reports if you explicitly opted into our newsletter (you can unsubscribe anytime).</li>
-            <li>To detect, prevent, and mitigate security threats, abuse, or unauthorized automated scraping.</li>
-          </ul>
-        </section>
+      <Section title="4. Advertising: Google AdSense and third-party vendors">
+        <p>
+          We use, or may use, <strong>Google AdSense</strong>, an advertising service provided by Google LLC, to display
+          ads on this website.
+        </p>
+        <ul>
+          <li>
+            <strong>Third-party vendors, including Google, use cookies</strong> to serve ads based on a user&apos;s prior
+            visits to this website or other websites.
+          </li>
+          <li>
+            <strong>DoubleClick DART cookie:</strong> Google&apos;s use of advertising cookies, including the DoubleClick
+            DART cookie, enables it and its partners to serve ads to our users based on their visits to this site and/or
+            other sites on the internet.
+          </li>
+          <li>
+            <strong>Other ad networks:</strong> third-party vendors and ad networks may also serve ads on our site and
+            use cookies, web beacons or similar technologies to collect information about your visits. Their use of this
+            information is governed by their own privacy policies, and we do not have access to or control over these
+            cookies.
+          </li>
+        </ul>
+        <p><strong>Your choices:</strong></p>
+        <ul>
+          <li>
+            Opt out of personalized advertising by Google in{' '}
+            <a href="https://adssettings.google.com" target="_blank" rel="noopener noreferrer">Google Ads Settings</a>.
+          </li>
+          <li>
+            Opt out of personalized advertising by other third-party vendors at{' '}
+            <a href="https://www.aboutads.info/choices/" target="_blank" rel="noopener noreferrer">www.aboutads.info</a>
+            {' '}or, in the EU/UK,{' '}
+            <a href="https://www.youronlinechoices.eu/" target="_blank" rel="noopener noreferrer">www.youronlinechoices.eu</a>.
+          </li>
+          <li>
+            Read how Google uses information from sites that use its services at{' '}
+            <a href="https://policies.google.com/technologies/partner-sites" target="_blank" rel="noopener noreferrer">policies.google.com/technologies/partner-sites</a>.
+          </li>
+        </ul>
+        <p>
+          More detail on each cookie and how to block them is in our <Link href="/cookies">Cookie Policy</Link>.
+        </p>
+      </Section>
 
-        <section>
-          <h2 className="text-xl font-bold text-[var(--text-ink)] mb-3 flex items-center gap-2">
-            4. Third-Party Service Providers
-          </h2>
-          <p className="text-[var(--text-muted)] mb-3">
-            We partner with reliable third-party cloud infrastructure to operate YT Niches securely:
-          </p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 my-4">
-            <div className="glass rounded-xl p-4 border border-[var(--border-line)]">
-              <h3 className="font-bold text-sm text-[var(--text-ink)] mb-1">Supabase (PostgreSQL &amp; Auth)</h3>
-              <p className="text-xs text-[var(--text-muted)]">
-                Secure cloud database with Row Level Security (RLS) and encrypted session token handling.
-              </p>
-            </div>
-            <div className="glass rounded-xl p-4 border border-[var(--border-line)]">
-              <h3 className="font-bold text-sm text-[var(--text-ink)] mb-1">Google OAuth</h3>
-              <p className="text-xs text-[var(--text-muted)]">
-                Standard identity protocol allowing safe, 1-click authentication without sharing passwords.
-              </p>
-            </div>
-          </div>
-        </section>
+      <Section title="5. Analytics">
+        <p>
+          We do not currently use analytics or tracking tools beyond our hosting provider&apos;s server logs. If that
+          changes, this policy will name the tool and explain what it collects.
+        </p>
+      </Section>
 
-        <section>
-          <h2 className="text-xl font-bold text-[var(--text-ink)] mb-3 flex items-center gap-2">
-            5. Data Protection &amp; Security
-          </h2>
-          <p className="text-[var(--text-muted)]">
-            We implement strict technical and organizational safeguards. All web communication is encrypted using industry-standard TLS/SSL (HTTPS). Sensitive database operations enforce Row Level Security, ensuring your bookmarked collections are accessible only by your verified authenticated ID.
-          </p>
-        </section>
+      <Section title="6. Sharing">
+        <p>We share information only with service providers that run the site, and only as needed:</p>
+        <ul>
+          <li><strong>Vercel Inc.</strong> (hosting and server logs)</li>
+          <li><strong>Google LLC</strong> (advertising through AdSense, when ads are shown)</li>
+        </ul>
+        <p>We may also disclose information if required by law or to protect the site and its users.</p>
+      </Section>
 
-        <section>
-          <h2 className="text-xl font-bold text-[var(--text-ink)] mb-3 flex items-center gap-2">
-            6. Your Rights &amp; Contact
-          </h2>
-          <p className="text-[var(--text-muted)]">
-            You hold the right to request deletion of your account and saved collections at any time. For privacy inquiries or data removal requests, please contact our support team at <strong>privacy@ytniches.com</strong>.
-          </p>
-        </section>
+      <Section title="7. Data retention and security">
+        <p>
+          Server logs are kept only as long as our hosting provider needs them for security and operations. Emails are
+          kept as long as needed to deal with your request. All traffic to the site is encrypted with HTTPS.
+        </p>
+      </Section>
 
-      </div>
+      <Section title="8. Your rights">
+        <p>
+          Depending on where you live (for example under the GDPR in the EU/UK or the CCPA in California), you may have
+          the right to access, correct or delete personal information we hold about you, to object to its use, and to
+          opt out of personalized advertising. Channel owners may also ask us to correct or remove information about their
+          channel. Email <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a> and we will respond within 30 days.
+        </p>
+      </Section>
 
-    </div>
+      <Section title="9. Children's privacy">
+        <p>
+          This site is intended for adults and is not directed at children under 13 (or under 16 in the EU). We do not
+          knowingly collect personal information from children. If you believe a child has sent us information, contact
+          us and we will delete it.
+        </p>
+      </Section>
+
+      <Section title="10. Changes to this policy">
+        <p>
+          We may update this policy as the site changes, for example if we add user accounts, analytics or new ad
+          partners. The effective date at the top shows the latest version.
+        </p>
+      </Section>
+    </LegalPage>
   );
 }
