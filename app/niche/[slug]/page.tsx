@@ -1,6 +1,7 @@
 import fs from 'node:fs';
+import { cache } from 'react';
 import path from 'node:path';
-import { notFound } from 'next/navigation';
+import { notFound, permanentRedirect } from 'next/navigation';
 import { Metadata } from 'next';
 import Link from 'next/link';
 import { Niche, Channel, VideoOutlierItem } from '@/types';
@@ -9,116 +10,64 @@ import NicheRevenueCalculator from '@/components/niche/NicheRevenueCalculator';
 import AdSlot from '@/components/ads/AdSlot';
 import NicheFaqAccordion from '@/components/niche/NicheFaqAccordion';
 import { formatNumber } from '@/lib/utils';
-import {
-  ArrowLeft,
-  Sparkles,
-  Layers,
-  DollarSign,
-  Users,
-  Eye,
-  Bot,
-  User,
-  Lightbulb,
-  Play,
-  ArrowRight,
-  TrendingUp,
-  CheckCircle2,
-  Copy
-} from 'lucide-react';
+import { matchChannels, matchOutliers, relatedNiches as findRelatedNiches } from '@/lib/niche-match';
+import NichePlaybook from '@/components/niche/NichePlaybook';
+import { Sparkles, Lightbulb, Play } from 'lucide-react';
 
 interface Props {
   params: Promise<{ slug: string }>;
 }
 
-function getNicheData(slug: string) {
-  const dataDir = path.join(process.cwd(), 'data');
-  const nichesFile = path.join(dataDir, 'unified_niches.json');
-  const channelsFile = path.join(dataDir, 'unified_channels.json');
-  const outliersFile = path.join(dataDir, 'unified_outliers.json');
+function readJson<T>(file: string): T[] {
+  const p = path.join(process.cwd(), 'data', file);
+  return fs.existsSync(p) ? (JSON.parse(fs.readFileSync(p, 'utf8')) as T[]) : [];
+}
 
-  let niche: Niche | null = null;
-  let topChannels: Channel[] = [];
-  let nicheOutliers: VideoOutlierItem[] = [];
-  let relatedNiches: Niche[] = [];
-
+// Loads a niche and everything that belongs to it. `exact` is false when the URL only loosely matched a niche,
+// so the page can redirect to the real slug instead of serving a duplicate page.
+// cache(): generateMetadata and the page share one load per request instead of reading the JSON twice.
+const getNicheData = cache(function getNicheData(slug: string) {
+  const empty = { niche: null as Niche | null, exact: false, matchedChannels: [] as Channel[], keywordMatches: 0, topChannels: [] as Channel[], nicheOutliers: [] as VideoOutlierItem[], relatedNiches: [] as Niche[] };
   try {
-    if (fs.existsSync(nichesFile)) {
-      const niches: Niche[] = JSON.parse(fs.readFileSync(nichesFile, 'utf8'));
-      const decoded = decodeURIComponent(slug).toLowerCase().trim();
-      const cleanSlug = decoded.replace(/^\/+|\/+$/g, '');
+    const niches = readJson<Niche>('unified_niches.json');
+    const cleanSlug = decodeURIComponent(slug).toLowerCase().trim().replace(/^\/+|\/+$/g, '');
 
-      // 1. Exact match by slug or name
-      niche = niches.find((n) => 
-        n.slug.toLowerCase() === cleanSlug || 
-        n.name.toLowerCase() === cleanSlug ||
-        n.slug.toLowerCase().replace(/-/g, '') === cleanSlug.replace(/-/g, '')
-      ) || null;
+    // 1. Exact match by slug or name
+    let niche = niches.find((n) =>
+      n.slug.toLowerCase() === cleanSlug ||
+      n.name.toLowerCase() === cleanSlug ||
+      n.slug.toLowerCase().replace(/-/g, '') === cleanSlug.replace(/-/g, '')
+    ) || null;
+    const exact = !!niche && niche.slug === cleanSlug;
 
-      // 2. Substring match
-      if (!niche) {
-        niche = niches.find((n) => 
-          n.slug.toLowerCase().includes(cleanSlug) || 
-          cleanSlug.includes(n.slug.toLowerCase())
-        ) || null;
-      }
-
-      // 3. Keyword token match
-      if (!niche) {
-        const words = cleanSlug.split(/[-_+\s]+/).filter((w) => w.length > 2);
-        niche = niches.find((n) => words.some((w) => n.slug.toLowerCase().includes(w))) || null;
-      }
-
-      if (niche) {
-        // Pick 6 related niches
-        relatedNiches = niches
-          .filter((n) => n.slug !== niche?.slug)
-          .slice(0, 6);
-      }
+    // 2. Loose matches (substring, then keyword) only to find where to redirect
+    if (!niche) niche = niches.find((n) => n.slug.toLowerCase().includes(cleanSlug) || cleanSlug.includes(n.slug.toLowerCase())) || null;
+    if (!niche) {
+      const words = cleanSlug.split(/[-_+\s]+/).filter((w) => w.length > 2);
+      niche = niches.find((n) => words.some((w) => n.slug.toLowerCase().includes(w))) || null;
     }
+    if (!niche) return empty;
+    if (!exact) return { ...empty, niche };
 
-    if (fs.existsSync(channelsFile) && niche) {
-      const channels: Channel[] = JSON.parse(fs.readFileSync(channelsFile, 'utf8'));
-      const q = niche.name.toLowerCase();
-      const qSlug = niche.slug.toLowerCase();
-      topChannels = channels
-        .filter((c) =>
-          (c.categories || []).some((cat) => cat.toLowerCase().includes(q) || q.includes(cat.toLowerCase())) ||
-          (c.tags || []).some((t) => t.toLowerCase().includes(q) || q.includes(t.toLowerCase())) ||
-          (c.categories || []).some((cat) => cat.toLowerCase().includes(qSlug))
-        )
-        .slice(0, 12);
-
-      if (topChannels.length === 0) {
-        topChannels = channels.slice(0, 6);
-      }
-    }
-
-    if (fs.existsSync(outliersFile) && niche) {
-      const allOutliers: VideoOutlierItem[] = JSON.parse(fs.readFileSync(outliersFile, 'utf8'));
-      const q = niche.name.toLowerCase();
-      const qSlug = niche.slug.toLowerCase();
-      nicheOutliers = allOutliers
-        .filter((o) =>
-          (o.category || '').toLowerCase().includes(q) ||
-          q.includes((o.category || '').toLowerCase()) ||
-          (o.tags || []).some((t) => t.toLowerCase().includes(q) || t.toLowerCase().includes(qSlug))
-        )
-        .slice(0, 6);
-
-      if (nicheOutliers.length === 0) {
-        nicheOutliers = allOutliers.slice(0, 6);
-      }
-    }
+    const matched = matchChannels(niche, readJson<Channel>('unified_channels.json'));
+    return {
+      niche,
+      exact,
+      matchedChannels: matched.all,
+      keywordMatches: matched.related.length,
+      topChannels: matched.all.slice(0, 12),
+      nicheOutliers: matchOutliers(niche, readJson<VideoOutlierItem>('unified_outliers.json'), matched.all).slice(0, 6),
+      relatedNiches: findRelatedNiches(niche, niches),
+    };
   } catch (e) {
     console.error('Error fetching niche data:', e);
+    return empty;
   }
-
-  return { niche, topChannels, nicheOutliers, relatedNiches };
-}
+});
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const { niche } = getNicheData(slug);
+  const { niche, matchedChannels } = getNicheData(slug);
   if (!niche) return { title: 'Niche Not Found · YT Niches' };
 
   const rpmFormatted = niche.rpm.avg.toFixed(2);
@@ -138,12 +87,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       'yt niches'
     ],
     alternates: {
-      canonical: `https://ytniches.com/niche/${slug}`
+      canonical: `https://ytniches.com/niche/${niche.slug}`
     },
+    // Niches with no tracked channels are thin pages: keep them out of search results.
+    robots: { index: matchedChannels.length > 0, follow: true },
     openGraph: {
       title: `${niche.name} YouTube Niche: RPM ($${rpmFormatted}), Channels & Viral Ideas`,
       description: `Benchmark AdSense RPM ($${rpmFormatted}), view velocity, competition score, and top outlier video blueprints in ${niche.name}.`,
-      url: `https://ytniches.com/niche/${slug}`,
+      url: `https://ytniches.com/niche/${niche.slug}`,
       siteName: 'YT Niches',
       type: 'article'
     },
@@ -157,11 +108,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function NicheDetailPage({ params }: Props) {
   const { slug } = await params;
-  const { niche, topChannels, nicheOutliers, relatedNiches } = getNicheData(slug);
+  const { niche, exact, matchedChannels, keywordMatches, topChannels, nicheOutliers, relatedNiches } = getNicheData(slug);
 
   if (!niche) {
     notFound();
   }
+  // Loose URLs (typos, partial slugs) go to the one real page instead of rendering duplicates.
+  if (!exact) permanentRedirect(`/niche/${niche.slug}`);
 
   const isAvatarNiche = niche.formatRecommendation.includes('Avatar');
   const est100k = Math.round((100000 / 1000) * niche.rpm.avg).toLocaleString();
@@ -186,7 +139,7 @@ export default async function NicheDetailPage({ params }: Props) {
     {
       question: `How competitive is the ${niche.name} YouTube niche?`,
       badge: `${niche.saturation} Saturation`,
-      answer: `The ${niche.name} niche currently exhibits a competition saturation level rated as "${niche.saturation}" with ${niche.channelCount.toLocaleString()} verified competitor channels tracked across the YT Niches directory, and an overall market demand score of ${niche.demandScore} / 10. Creators entering this space should focus on high-multiplier curiosity gap angles and proven title formulas rather than generic topics to stand out rapidly.`
+      answer: `The ${niche.name} niche currently exhibits a competition saturation level rated as "${niche.saturation}" with ${matchedChannels.length.toLocaleString()} verified competitor channels tracked across the YT Niches directory, and an overall market demand score of ${niche.demandScore} / 10. Creators entering this space should focus on high-multiplier curiosity gap angles and proven title formulas rather than generic topics to stand out rapidly.`
     },
     {
       question: `How do top creators in ${niche.name} monetize beyond YouTube AdSense?`,
@@ -208,7 +161,7 @@ export default async function NicheDetailPage({ params }: Props) {
             name: `${niche.name} YouTube Niche Blueprint`,
             description: `Complete breakdown of the ${niche.name} YouTube niche with estimated RPM and top competitor channels.`,
             url: `https://ytniches.com/niche/${slug}`,
-            numberOfItems: niche.channelCount
+            numberOfItems: matchedChannels.length
           })
         }}
       />
@@ -297,7 +250,7 @@ export default async function NicheDetailPage({ params }: Props) {
         </h1>
 
         <p className="text-[15.5px] text-[var(--text-muted)] leading-relaxed max-w-3xl mb-8">
-          The <strong>{niche.name}</strong> niche on YouTube currently tracks <strong>{niche.channelCount.toLocaleString()} channels</strong> with an average view velocity of <strong>{formatNumber(niche.avgViews)} views</strong> per upload. Content in this vertical commands a benchmark AdSense RPM range between <strong>${niche.rpm.min.toFixed(2)}</strong> and <strong>${niche.rpm.max.toFixed(2)}</strong>, with highest profitability achieved via mid-roll ad placement and digital product backends.
+          The <strong>{niche.name}</strong> niche on YouTube currently tracks <strong>{matchedChannels.length.toLocaleString()} channels</strong> with an average view velocity of <strong>{formatNumber(niche.avgViews)} views</strong> per upload. Content in this vertical commands a benchmark AdSense RPM range between <strong>${niche.rpm.min.toFixed(2)}</strong> and <strong>${niche.rpm.max.toFixed(2)}</strong>, with highest profitability achieved via mid-roll ad placement and digital product backends.
         </p>
 
         {/* Key Metrics Bar */}
@@ -311,7 +264,7 @@ export default async function NicheDetailPage({ params }: Props) {
           <div>
             <div className="text-[11px] uppercase tracking-wider text-[var(--text-muted)] font-semibold">Tracked Channels</div>
             <div className="text-2xl sm:text-3xl font-extrabold num-mono text-[var(--text-ink)] mt-1">
-              {niche.channelCount.toLocaleString()}
+              {matchedChannels.length.toLocaleString()}
             </div>
           </div>
           <div>
@@ -333,50 +286,8 @@ export default async function NicheDetailPage({ params }: Props) {
       <NicheRevenueCalculator nicheName={niche.name} rpm={niche.rpm} />
       <AdSlot format="rectangle" className="my-8" />
 
-      {/* 3. Production & Format Blueprint */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 my-10">
-        
-        {/* Format Verdict Card */}
-        <div className="glass rounded-2xl p-6 border border-[var(--border-line)]">
-          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[var(--brand-mark)] mb-2">
-            {isAvatarNiche ? <Bot className="size-4" /> : <User className="size-4" />}
-            Recommended Production Format
-          </div>
-          <h3 className="text-lg font-bold text-[var(--text-ink)] mb-3">
-            {niche.formatRecommendation}
-          </h3>
-          <p className="text-[13.5px] text-[var(--text-muted)] leading-relaxed mb-4">
-            Audience retention in the {niche.name} space responds best to consistent host recognition and narrative storytelling. Pair a photorealistic avatar or authoritative narration with documentary-style B-roll.
-          </p>
-          <div className="p-3.5 rounded-xl bg-[var(--bg-surface-2)] border border-[var(--border-line)] text-xs text-[var(--text-ink)] space-y-1.5">
-            <div className="font-semibold text-[var(--brand-mark)]">Recommended AI Stack:</div>
-            <div>&bull; Scripting: Claude 3.5 Sonnet / DeepSeek (1,800 - 2,500 word retention arc)</div>
-            <div>&bull; Voiceover: ElevenLabs (Deep narrative or empathetic storyteller voice)</div>
-            <div>&bull; Visuals: Midjourney v6 + Runway Gen-3 cinematic B-roll</div>
-          </div>
-        </div>
-
-        {/* Monetization Models Card */}
-        <div className="glass rounded-2xl p-6 border border-[var(--border-line)]">
-          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-emerald-500 mb-2">
-            <DollarSign className="size-4" />
-            Monetization Beyond AdSense
-          </div>
-          <h3 className="text-lg font-bold text-[var(--text-ink)] mb-3">
-            Digital Offers &amp; Backend Funnels
-          </h3>
-          <p className="text-[13.5px] text-[var(--text-muted)] leading-relaxed mb-4">
-            Top creators in this category do not rely solely on YouTube ad revenue. They monetize with dedicated downloadable bundles linked directly in the pinned comment.
-          </p>
-          <div className="p-3.5 rounded-xl bg-[var(--bg-surface-2)] border border-[var(--border-line)] text-xs text-[var(--text-ink)] space-y-1.5">
-            <div className="font-semibold text-emerald-500">Proven Product Types:</div>
-            <div>&bull; $29 Specialized Starter Guide / Cheat Sheet (Gumroad/Stripe)</div>
-            <div>&bull; Curated Notion Database / Resource Checklist</div>
-            <div>&bull; High-ticket Affiliate Software / Physical Tool Recommendations</div>
-          </div>
-        </div>
-
-      </div>
+      {/* 3. Creator AI Playbook (calculated from this niche's channels) */}
+      <NichePlaybook niche={niche} channels={matchedChannels} />
 
       {/* 4. Viral Title Blueprints (Curiosity Gap Formulas) */}
       <div className="glass rounded-2xl p-6 sm:p-8 border border-[var(--border-line)] my-10">
@@ -388,7 +299,7 @@ export default async function NicheDetailPage({ params }: Props) {
           5 Viral Title Formulas for {niche.name}
         </h2>
         <p className="text-xs sm:text-sm text-[var(--text-muted)] mb-6">
-          Deconstructed from 18,000+ outlier videos that generated over 10x the channel subscriber count:
+          Title templates for this niche. Swap the [brackets] for your own topic:
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
           {niche.topTitleFormulas.map((formula, idx) => (
@@ -418,7 +329,9 @@ export default async function NicheDetailPage({ params }: Props) {
               Top Competitor Channels in {niche.name}
             </h2>
             <p className="text-xs sm:text-sm text-[var(--text-muted)] mt-1">
-              Examine their format, view velocity, and outlier video formulas.
+              {matchedChannels.length
+                ? `Biggest ${topChannels.length} of ${matchedChannels.length.toLocaleString()} matching channel${matchedChannels.length === 1 ? '' : 's'}${keywordMatches ? `, including ${keywordMatches} matched by keyword in their title or tags` : ''}.`
+                : 'Examine their format, view velocity, and outlier video formulas.'}
             </p>
           </div>
           <Link
@@ -429,11 +342,25 @@ export default async function NicheDetailPage({ params }: Props) {
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {topChannels.map((c) => (
-            <ChannelCard key={c.id || c.handle} channel={c} />
-          ))}
-        </div>
+        {topChannels.length ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {topChannels.map((c) => (
+              <ChannelCard key={c.id || c.handle} channel={c} />
+            ))}
+          </div>
+        ) : (
+          // No unrelated "filler" channels: say plainly that this niche has none tracked yet.
+          <div className="glass rounded-2xl p-8 text-center border border-dashed border-[var(--border-line-strong)]">
+            <p className="text-[15px] font-semibold text-[var(--text-ink)]">No tracked channels in {niche.name} yet</p>
+            <p className="text-[13px] text-[var(--text-muted)] mt-1">
+              Nothing in our library matches this niche by category, tag or keyword.
+              {relatedNiches.length > 0 && ' Try one of the related niches below.'}
+            </p>
+            <Link href="/" className="inline-block mt-4 text-[13px] font-semibold text-[var(--brand-mark)] hover:underline">
+              Browse all channels &rarr;
+            </Link>
+          </div>
+        )}
       </div>
 
       {/* 6. Viral Outliers in this Niche */}
@@ -481,11 +408,6 @@ export default async function NicheDetailPage({ params }: Props) {
                   {vid.multiplier && vid.multiplier > 1 && (
                     <span className="absolute top-2 right-2 px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500 text-black shadow-md">
                       {vid.multiplier}x Outlier
-                    </span>
-                  )}
-                  {vid.durationFormatted && (
-                    <span className="absolute bottom-2 right-2 px-2 py-0.5 rounded text-[10px] font-mono font-medium bg-black/85 text-white backdrop-blur-sm">
-                      {vid.durationFormatted}
                     </span>
                   )}
                   <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">

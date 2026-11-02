@@ -3,6 +3,7 @@ import path from 'node:path';
 import { Metadata } from 'next';
 import HomeClient from '@/components/home/HomeClient';
 import { Channel } from '@/types';
+import { toCardChannel } from '@/lib/card-channel';
 
 export const metadata: Metadata = {
   title: 'YT Niches · Find Profitable YouTube Niches, AI Avatars & 18,000+ Outliers [2026]',
@@ -61,32 +62,7 @@ try {
 }
 
   const totalChannelsCount = channels.length || 6866;
-  const initialChannels: Channel[] = channels.slice(0, 36).map((c) => ({
-    id: c.id,
-    title: c.title,
-    handle: c.handle,
-    thumbnail: c.thumbnail,
-    subscribers: c.subscribers || 0,
-    avgViews: c.avgViews || 0,
-    totalViews: c.totalViews || 0,
-    totalVideos: c.totalVideos || 0,
-    format: c.format || 'faceless',
-    avatarStyle: c.avatarStyle || null,
-    monetization: Boolean(c.monetization),
-    estimatedRpm: c.estimatedRpm || { min: 4, max: 12, avg: 7.5 },
-    estimatedMonthlyRevenueUsd: c.estimatedMonthlyRevenueUsd || null,
-    categories: c.categories || [],
-    tags: c.tags || [],
-    medianLengthFormatted: c.medianLengthFormatted || null,
-    popularVideos: (c.popularVideos || []).slice(0, 3).map((v) => ({
-      videoId: v.videoId,
-      title: v.title,
-      thumbnail: v.thumbnail,
-      viewsFormatted: v.viewsFormatted,
-      durationFormatted: v.durationFormatted,
-      videoUrl: v.videoUrl
-    }))
-  }));
+  const initialChannels: Channel[] = channels.slice(0, 36).map(toCardChannel);
 
   return {
     channels: initialChannels,

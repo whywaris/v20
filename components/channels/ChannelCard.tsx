@@ -4,7 +4,26 @@ import React from 'react';
 import Link from 'next/link';
 import { Channel } from '@/types';
 import { formatNumber, formatCurrency } from '@/lib/utils';
-import { DollarSign, CheckCircle2, Play, Sparkles, User, Bot, ExternalLink } from 'lucide-react';
+import { DollarSign, CheckCircle2, Play, Sparkles, User, Bot, Film, ShoppingBag } from 'lucide-react';
+
+const OFFER_LABEL: Record<string, string> = {
+  ebook: 'Sells Ebook',
+  guide: 'Sells Guide',
+  cookbook: 'Sells Cookbook',
+  bundle: 'Sells Bundle',
+  membership: 'Sells Membership',
+  lead_magnet: 'Free Lead Magnet',
+  other: 'Sells Digital Product',
+};
+
+// What the channel sells, preferring a paid product over a free lead magnet.
+function monetizationBadge(channel: Channel): string | null {
+  const types = (channel.offers ?? []).map((o) => o.type);
+  const paid = types.find((t) => t !== 'lead_magnet');
+  if (paid) return OFFER_LABEL[paid] ?? 'Sells Digital Product';
+  if (types.length) return OFFER_LABEL.lead_magnet;
+  return channel.sells === 'yes' ? 'Sells Digital Product' : null;
+}
 
 interface ChannelCardProps {
   channel: Channel;
@@ -14,6 +33,9 @@ export default function ChannelCard({ channel }: ChannelCardProps) {
   const channelSlug = channel.slug || channel.id || channel.handle.replace('@', '');
   const topVideos = (channel.popularVideos || []).slice(0, 3);
   const isAvatar = channel.format === 'avatar' || Boolean(channel.avatarStyle);
+  const sellsBadge = monetizationBadge(channel);
+  // Per-video durations in the data are the channel's median length copied onto every video, so show it once.
+  const typicalMinutes = channel.medianLengthSeconds ? Math.max(1, Math.round(channel.medianLengthSeconds / 60)) : null;
 
   return (
     <div className="glass-card rounded-2xl p-4 sm:p-5 flex flex-col justify-between group relative overflow-hidden transition-all duration-200 hover:shadow-xl hover:border-[var(--brand-accent)]/40 hover:-translate-y-0.5">
@@ -43,11 +65,7 @@ export default function ChannelCard({ channel }: ChannelCardProps) {
               >
                 {channel.title}
               </Link>
-              {channel.monetization && (
-                <span title="Monetized with YouTube AdSense" className="shrink-0 inline-flex">
-                  <CheckCircle2 className="size-3.5 text-emerald-500 fill-emerald-500/20" />
-                </span>
-              )}
+              
             </div>
 
             <div className="flex items-center gap-2 text-[12px] text-[var(--text-muted)] mt-0.5">
@@ -60,11 +78,22 @@ export default function ChannelCard({ channel }: ChannelCardProps) {
                 <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[10.5px] font-semibold rounded-md bg-purple-500/10 text-purple-400 border border-purple-500/20">
                   <Bot className="size-3" /> AI Avatar
                 </span>
+              ) : channel.format === 'documentary' ? (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[10.5px] font-semibold rounded-md bg-sky-500/10 text-sky-400 border border-sky-500/20">
+                  <Film className="size-3" /> Documentary
+                </span>
               ) : (
                 <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[10.5px] font-semibold rounded-md bg-blue-500/10 text-blue-400 border border-blue-500/20">
                   <User className="size-3" /> Faceless
                 </span>
               )}
+
+              {/* Monetization status */}
+              {sellsBadge ? (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[10.5px] font-semibold rounded-md bg-amber-500/10 text-amber-500 border border-amber-500/20">
+                  <ShoppingBag className="size-3" /> {sellsBadge}
+                </span>
+              ) : null}
 
               {(channel.categories || []).slice(0, 1).map((cat, idx) => (
                 <Link
@@ -110,14 +139,16 @@ export default function ChannelCard({ channel }: ChannelCardProps) {
           </div>
         </div>
 
-        {/* Top Outlier Videos Preview with Duration & Views pills */}
+        {/* Top Outlier Videos Preview with views pills */}
         {topVideos.length > 0 && (
           <div className="mt-3.5">
             <div className="text-[11px] font-semibold text-[var(--text-muted)] mb-1.5 flex items-center justify-between">
               <span className="flex items-center gap-1">
                 <Sparkles className="size-3 text-[var(--brand-mark)]" /> Viral Outlier Videos
               </span>
-              <span className="text-[10px] text-[var(--text-muted)] font-mono">Top 3</span>
+              <span className="text-[10px] text-[var(--text-muted)] font-mono">
+                Top 3{typicalMinutes ? ` · ~${typicalMinutes} min videos` : ''}
+              </span>
             </div>
             <div className="grid grid-cols-3 gap-1.5">
               {topVideos.map((vid, i) => (
@@ -146,13 +177,6 @@ export default function ChannelCard({ channel }: ChannelCardProps) {
                     </span>
                   )}
 
-                  {/* Duration Pill (Bottom Right) */}
-                  {vid.durationFormatted && (
-                    <span className="absolute bottom-1 right-1 px-1.5 py-0.5 rounded text-[9px] font-mono font-medium bg-black/85 text-white/90 backdrop-blur-sm pointer-events-none">
-                      {vid.durationFormatted}
-                    </span>
-                  )}
-
                   {/* Play Overlay on Hover */}
                   <div className="absolute inset-0 bg-black/30 opacity-0 group-hover/thumb:opacity-100 flex items-center justify-center transition-opacity">
                     <div className="size-6 rounded-full bg-white/90 text-black flex items-center justify-center shadow-md">
@@ -168,15 +192,9 @@ export default function ChannelCard({ channel }: ChannelCardProps) {
 
       {/* Bottom CTA & Footer Details */}
       <div className="mt-4 pt-3 border-t border-[var(--border-line)] flex items-center justify-between">
-        {channel.sells === 'yes' || (channel.offers && channel.offers.length > 0) ? (
-          <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-amber-400">
-            <DollarSign className="size-3" /> Sells Digital Product
-          </span>
-        ) : (
-          <span className="text-[11.5px] text-[var(--text-muted)] font-medium">
-            Est. RPM: <strong className="text-emerald-500">${channel.estimatedRpm?.avg || 8.5}</strong>
-          </span>
-        )}
+        <span className="text-[11.5px] text-[var(--text-muted)] font-medium">
+          Est. RPM: <strong className="text-emerald-500">${channel.estimatedRpm?.avg || 8.5}</strong>
+        </span>
 
         <Link
           href={`/channel/${channelSlug}`}

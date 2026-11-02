@@ -40,25 +40,9 @@ export default function ChannelTableRow({ channel }: Props) {
             </Link>
             <div className="flex items-center gap-1.5 text-xs text-[var(--text-muted)]">
               <span>{channel.handle}</span>
-              {channel.monetization && (
-                <CheckCircle2 className="size-3 text-emerald-500 fill-emerald-500/20" />
-              )}
             </div>
           </div>
         </div>
-      </td>
-
-      {/* Format */}
-      <td className="py-3 px-3">
-        {isAvatar ? (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[10.5px] font-semibold rounded-md bg-purple-500/10 text-purple-400 border border-purple-500/20">
-            <Bot className="size-3" /> AI Avatar
-          </span>
-        ) : (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[10.5px] font-semibold rounded-md bg-blue-500/10 text-blue-400 border border-blue-500/20">
-            <User className="size-3" /> Faceless
-          </span>
-        )}
       </td>
 
       {/* Primary Niche */}

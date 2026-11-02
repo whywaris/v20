@@ -247,12 +247,7 @@ export default function OutliersClient({ initialVideos, totalVideosCount = 18086
                       </span>
                     )}
 
-                    {/* Duration Badge */}
-                    {vid.durationFormatted && (
-                      <span className="absolute bottom-2 right-2 px-1.5 py-0.5 rounded text-[10px] font-mono font-medium bg-black/85 text-white backdrop-blur-sm">
-                        {vid.durationFormatted}
-                      </span>
-                    )}
+                    {/* No duration badge: the data's per-video durations are just the channel's median length. */}
 
                     {/* Play Hover */}
                     <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">

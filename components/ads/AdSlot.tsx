@@ -19,6 +19,7 @@ const SLOT_IDS: Record<AdFormat, string | undefined> = {
 };
 const INFEED_LAYOUT_KEY = process.env.NEXT_PUBLIC_ADSENSE_INFEED_LAYOUT_KEY;
 const IS_DEV = process.env.NODE_ENV !== 'production';
+const SHOW_PLACEHOLDERS = process.env.NEXT_PUBLIC_SHOW_AD_PLACEHOLDERS === 'true';
 
 // Space reserved up front for each format, so the page never jumps when an ad loads (CLS = 0).
 const RESERVED: Record<AdFormat, string> = {
@@ -72,7 +73,7 @@ export default function AdSlot({ format, className = '' }: { format: AdFormat; c
     );
   }
 
-  if (!IS_DEV) return null;
+  if (!SHOW_PLACEHOLDERS) return null;
 
   return (
     <div

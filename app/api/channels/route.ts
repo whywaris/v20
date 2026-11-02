@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { toCardChannel } from '@/lib/card-channel';
 import fs from 'node:fs';
 import path from 'node:path';
 import { Channel } from '@/types';
@@ -13,33 +14,7 @@ function loadChannels(): Channel[] {
     if (fs.existsSync(filePath)) {
       const raw = JSON.parse(fs.readFileSync(filePath, 'utf8'));
       // Pre-map to remove heavy arrays not needed for cards/listings
-      cachedChannels = raw.map((c: any) => ({
-        id: c.id,
-        title: c.title,
-        handle: c.handle,
-        thumbnail: c.thumbnail,
-        subscribers: c.subscribers || 0,
-        avgViews: c.avgViews || 0,
-        totalViews: c.totalViews || 0,
-        totalVideos: c.totalVideos || 0,
-        format: c.format || 'faceless',
-        avatarStyle: c.avatarStyle || null,
-        monetization: Boolean(c.monetization),
-        estimatedRpm: c.estimatedRpm || { min: 4, max: 12, avg: 7.5 },
-        estimatedMonthlyRevenueUsd: c.estimatedMonthlyRevenueUsd || null,
-        categories: c.categories || [],
-        tags: c.tags || [],
-        medianLengthFormatted: c.medianLengthFormatted || null,
-        // Include only 3 top outlier video previews to keep payload ultra-lean
-        popularVideos: (c.popularVideos || []).slice(0, 3).map((v: any) => ({
-          videoId: v.videoId,
-          title: v.title,
-          thumbnail: v.thumbnail,
-          viewsFormatted: v.viewsFormatted,
-          durationFormatted: v.durationFormatted,
-          videoUrl: v.videoUrl
-        }))
-      }));
+      cachedChannels = raw.map(toCardChannel);
       return cachedChannels!;
     }
   } catch (err) {

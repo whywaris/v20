@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <defs>
+    <linearGradient id="brandGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FF6A3D" />
+      <stop offset="100%" stop-color="#E4572E" />
+    </linearGradient>
+  </defs>
+  <rect width="32" height="32" rx="8" fill="url(#brandGrad)" />
+  <!-- Sparkles / Star Icon -->
+  <path d="M16 6 L18 13 L25 15 L18 17 L16 24 L14 17 L7 15 L14 13 Z" fill="#FFFFFF" />
+  <circle cx="23" cy="9" r="1.5" fill="#FFFFFF" opacity="0.9" />
+</svg>

@@ -6,7 +6,7 @@ import Footer from '@/components/layout/Footer';
 import { ToastProvider } from '@/components/ui/Toast';
 import Script from 'next/script';
 
-// Public publisher ID (ca-pub-…). When unset, no AdSense script is loaded at all.
+// Public publisher ID (ca-pub-XXXXXXXXXXXXXXXX…). When unset, no AdSense script is loaded at all.
 const ADSENSE_CLIENT_ID = process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID;
 
 const fontSans = Plus_Jakarta_Sans({
@@ -84,6 +84,31 @@ export default function RootLayout({
         <ToastProvider>
           <Header />
           <main className="flex-1">{children}</main>
+        {/* Google Analytics (gtag.js) */}
+        <Script
+          strategy="afterInteractive"
+          src="https://www.googletagmanager.com/gtag/js?id=G-TP1Z050E8V"
+        />
+        <Script
+          id="google-analytics"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+              gtag('config', 'G-TP1Z050E8V');
+            `,
+          }}
+        />
+
+        {/* Ahrefs Web Analytics */}
+        <Script
+          strategy="afterInteractive"
+          src="https://analytics.ahrefs.com/analytics.js"
+          data-key="X2KvVQJKwkPEU/Yh6/8sLg"
+        />
+
           <Footer />
         </ToastProvider>
         {ADSENSE_CLIENT_ID && (
