@@ -2,6 +2,7 @@ import React from 'react';
 import Link from 'next/link';
 import { Metadata } from 'next';
 import { Calendar, Clock, ArrowRight, BookOpen, Sparkles } from 'lucide-react';
+import { getPublishedPosts } from '@/lib/posts';
 
 export const metadata: Metadata = {
   title: 'YouTube Niche Intelligence Blog & Guides · YT Niches',
@@ -11,56 +12,12 @@ export const metadata: Metadata = {
   }
 };
 
-export interface BlogPost {
-  slug: string;
-  title: string;
-  excerpt: string;
-  category: string;
-  date: string;
-  readTime: string;
-  coverImage: string;
-}
+// Published posts come from Supabase (written in /admin), with the built-in posts as fallback.
+// revalidate: refreshed every 5 minutes; saving in /admin also refreshes it immediately.
+export const revalidate = 300;
 
-export const BLOG_POSTS: BlogPost[] = [
-  {
-    slug: 'top-high-rpm-youtube-niches-2026',
-    title: 'Top 10 High RPM YouTube Niches in 2026 (Real Data from 6,800+ Channels)',
-    excerpt: 'An exhaustive analysis of real YouTube AdSense RPM rates across Finance, Tech, History, and Spirituality. See which niches make $15-$25 per thousand views.',
-    category: 'Monetization & RPM',
-    date: 'Oct 24, 2026',
-    readTime: '8 min read',
-    coverImage: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&auto=format&fit=crop&q=60'
-  },
-  {
-    slug: 'how-to-build-faceless-history-channel-ai',
-    title: 'How to Build a 100K Subscriber Faceless History Channel Using AI Tools',
-    excerpt: 'Step-by-step case study deconstructing how channels like Chloe VS History and The Crystalier generate millions of views with AI scripts and cinematic visuals.',
-    category: 'Case Studies',
-    date: 'Oct 20, 2026',
-    readTime: '12 min read',
-    coverImage: 'https://images.unsplash.com/photo-1461360370896-922624d12aa1?w=800&auto=format&fit=crop&q=60'
-  },
-  {
-    slug: 'viral-youtube-title-formulas-deconstructed',
-    title: '20 Viral YouTube Title Formulas Deconstructed from 18,000 Outlier Videos',
-    excerpt: 'Stop guessing your video titles. Here are the 20 psychological curiosity-gap formulas responsible for over 500 million views across faceless YouTube channels.',
-    category: 'Title Blueprints',
-    date: 'Oct 15, 2026',
-    readTime: '10 min read',
-    coverImage: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=60'
-  },
-  {
-    slug: 'monetizing-youtube-beyond-adsense-ebooks-funnels',
-    title: 'How Faceless Channels Make $10,000/Month Selling Digital Products on Gumroad',
-    excerpt: 'Why relying solely on AdSense is leaving 80% of your revenue on the table. A breakdown of digital cookbooks, survival guides, and Notion bundles.',
-    category: 'Digital Products',
-    date: 'Oct 10, 2026',
-    readTime: '9 min read',
-    coverImage: 'https://images.unsplash.com/photo-1553729459-efe14ef6055d?w=800&auto=format&fit=crop&q=60'
-  }
-];
-
-export default function BlogHubPage() {
+export default async function BlogHubPage() {
+  const BLOG_POSTS = await getPublishedPosts();
   return (
     <div className="mx-auto max-w-7xl px-4 sm:px-6 py-10">
       
@@ -131,11 +88,13 @@ export default function BlogHubPage() {
             className="glass-card rounded-2xl overflow-hidden flex flex-col group"
           >
             <div className="relative aspect-[16/9] w-full overflow-hidden bg-black/20">
-              <img
-                src={post.coverImage}
-                alt={post.title}
-                className="size-full object-cover group-hover:scale-105 transition-transform duration-300"
-              />
+              {post.coverImage && (
+                <img
+                  src={post.coverImage}
+                  alt={post.title}
+                  className="size-full object-cover group-hover:scale-105 transition-transform duration-300"
+                />
+              )}
               <span className="absolute top-3 left-3 px-2.5 py-1 text-[11px] font-semibold rounded-md bg-black/60 text-white backdrop-blur-md">
                 {post.category}
               </span>

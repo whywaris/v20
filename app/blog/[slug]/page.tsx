@@ -3,7 +3,11 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
 import { Calendar, Clock, ArrowLeft, Share2, Sparkles, CheckCircle2 } from 'lucide-react';
-import { BLOG_POSTS, BlogPost } from '../page';
+import { marked } from 'marked';
+import { getPublishedPost } from '@/lib/posts';
+
+// Refreshed every 5 minutes; saving a post in /admin refreshes it immediately.
+export const revalidate = 300;
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -11,7 +15,7 @@ interface Props {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const post = BLOG_POSTS.find((p) => p.slug === slug);
+  const post = await getPublishedPost(slug);
   if (!post) return { title: 'Post Not Found' };
 
   return {
@@ -32,7 +36,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function SingleBlogPostPage({ params }: Props) {
   const { slug } = await params;
-  const post = BLOG_POSTS.find((p) => p.slug === slug);
+  const post = await getPublishedPost(slug);
 
   if (!post) {
     notFound();
@@ -123,11 +127,19 @@ export default async function SingleBlogPostPage({ params }: Props) {
       </div>
 
       {/* Cover Image */}
-      <div className="relative aspect-[16/9] w-full rounded-2xl overflow-hidden mb-10 border border-[var(--border-line)]">
-        <img src={post.coverImage} alt={post.title} className="size-full object-cover" />
-      </div>
+      {post.coverImage && (
+        <div className="relative aspect-[16/9] w-full rounded-2xl overflow-hidden mb-10 border border-[var(--border-line)]">
+          <img src={post.coverImage} alt={post.title} className="size-full object-cover" />
+        </div>
+      )}
 
-      {/* Article Content */}
+      {/* Article Content: posts written in /admin are Markdown (admin-only authors); built-in posts use the template below. */}
+      {post.content ? (
+        <div
+          className="prose-post max-w-none text-[15.5px] leading-relaxed text-[var(--text-ink)]"
+          dangerouslySetInnerHTML={{ __html: marked.parse(post.content) as string }}
+        />
+      ) : (
       <div className="prose prose-invert max-w-none text-[15.5px] leading-relaxed text-[var(--text-ink)] space-y-6">
         <p className="text-lg font-medium text-[var(--text-muted)] leading-relaxed">
           {post.excerpt}
@@ -177,6 +189,7 @@ export default async function SingleBlogPostPage({ params }: Props) {
           <li><strong>Build an Email Funnel on Day 1:</strong> Collect subscriber emails from your YouTube bio and link directly to a high-converting Gumroad or Stripe checkout.</li>
         </ol>
       </div>
+      )}
 
       {/* Author & CTA Box */}
       <div className="mt-12 pt-8 border-t border-[var(--border-line)] flex items-center justify-between">

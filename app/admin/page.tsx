@@ -22,8 +22,10 @@ import {
   Bot,
   User,
   AlertCircle,
-  TrendingUp
+  TrendingUp,
+  BookOpen
 } from 'lucide-react';
+import BlogManager from '@/components/admin/BlogManager';
 import { Channel, Niche } from '@/types';
 import { formatNumber, formatCurrency } from '@/lib/utils';
 import { signInWithGoogle } from '@/lib/supabase/client';
@@ -31,7 +33,7 @@ import { signInWithGoogle } from '@/lib/supabase/client';
 export default function AdminDashboardPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [passcode, setPasscode] = useState('');
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'channels' | 'niches' | 'settings'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'channels' | 'niches' | 'blog' | 'settings'>('dashboard');
   const [toast, setToast] = useState<{ msg: string; type: 'success' | 'error' } | null>(null);
 
   // Stats state
@@ -396,6 +398,16 @@ export default function AdminDashboardPage() {
           }`}
         >
           <Layers className="size-3.5" /> Niche Manager ({stats.nichesCount.toLocaleString()})
+        </button>
+        <button
+          onClick={() => setActiveTab('blog')}
+          className={`px-4 py-2 rounded-xl text-xs font-bold transition-all inline-flex items-center gap-1.5 ${
+            activeTab === 'blog'
+              ? 'bg-[var(--brand-accent)] text-white shadow-sm'
+              : 'text-[var(--text-muted)] hover:text-[var(--text-ink)] hover:bg-[var(--bg-surface-2)]'
+          }`}
+        >
+          <BookOpen className="size-3.5" /> Blog Management
         </button>
         <button
           onClick={() => setActiveTab('settings')}
@@ -842,6 +854,9 @@ export default function AdminDashboardPage() {
       )}
 
       {/* TAB 4: SETTINGS & SEO */}
+      {/* TAB: BLOG MANAGEMENT */}
+      {activeTab === 'blog' && <BlogManager showToast={showToast} />}
+
       {activeTab === 'settings' && (
         <div className="glass rounded-2xl p-6 sm:p-8 border border-[var(--border-line)] space-y-6 max-w-2xl">
           <h2 className="text-lg font-bold text-[var(--text-ink)] pb-3 border-b border-[var(--border-line)]">

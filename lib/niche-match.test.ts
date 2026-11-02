@@ -1,6 +1,29 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { isExactMatch, isKeywordMatch, keywords, matchChannels, matchOutliers, relatedNiches } from './niche-match.ts';
+import { isExactMatch, isKeywordMatch, keywords, matchChannels, matchOutliers, nicheChannelCounter, relatedNiches } from './niche-match.ts';
+
+test('nicheChannelCounter gives the same count as matchChannels', () => {
+  const channels = [
+    ch('a', 5, { categories: ['Space Science'] }),
+    ch('b', 4, { tags: ['space-science'] }),
+    ch('c', 3, { title: 'Science of Space' }),
+    ch('d', 2, { title: 'Space and Science Daily', categories: ['Space Science'] }), // exact and keyword: count once
+    ch('e', 1, { categories: ['Cooking'], title: 'Cooking Science' }),
+    ...Array.from({ length: 6 }, (_, i) => ch(`h${i}`, i, { categories: ['History'] })),
+    ch('kw', 1, { title: 'History Shorts' }),
+  ];
+  const count = nicheChannelCounter(channels);
+  for (const n of [
+    { name: 'Space Science', slug: 'space-science' },
+    { name: 'History', slug: 'history' }, // >= 6 exact: keyword tier skipped
+    { name: 'Cooking', slug: 'cooking' },
+    { name: 'Science', slug: 'science' },
+    { name: 'Underwater Basket Weaving', slug: 'x' },
+    { name: 'AI', slug: 'ai' }, // no keywords
+  ]) {
+    assert.equal(count(n), matchChannels(n, channels).all.length, n.name);
+  }
+});
 
 const ch = (handle: string, subscribers: number, extra: { title?: string; categories?: string[]; tags?: string[] } = {}) =>
   ({ handle, subscribers, title: extra.title ?? handle, categories: extra.categories ?? [], tags: extra.tags ?? [] });

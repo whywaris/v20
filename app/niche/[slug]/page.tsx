@@ -32,9 +32,8 @@ const getNicheData = cache(function getNicheData(slug: string) {
     const niches = readJson<Niche>('unified_niches.json');
     const cleanSlug = decodeURIComponent(slug).toLowerCase().trim().replace(/^\/+|\/+$/g, '');
 
-    // 1. Exact match by slug or name
-    let niche = niches.find((n) =>
-      n.slug.toLowerCase() === cleanSlug ||
+    // 1. The exact slug always wins (otherwise e.g. "geo-politics" would resolve to "geopolitics"), then name / dashless slug.
+    let niche = niches.find((n) => n.slug.toLowerCase() === cleanSlug) || niches.find((n) =>
       n.name.toLowerCase() === cleanSlug ||
       n.slug.toLowerCase().replace(/-/g, '') === cleanSlug.replace(/-/g, '')
     ) || null;

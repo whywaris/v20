@@ -46,6 +46,35 @@ export function matchChannels<C extends MatchChannel>(niche: MatchNiche, channel
   return { exact, related, all: [...exact, ...related] };
 }
 
+/**
+ * Same result as matchChannels(niche, channels).all.length, but indexed once so it can be asked for thousands of
+ * niches (sitemaps). Exact keys: category/tag lowercased name and slug; keyword index: whole words.
+ */
+export function nicheChannelCounter(channels: MatchChannel[]) {
+  const exactIndex = new Map<string, Set<number>>();
+  const wordIndex = new Map<string, Set<number>>();
+  const add = (m: Map<string, Set<number>>, k: string, i: number) => (m.get(k) ?? m.set(k, new Set()).get(k)!).add(i);
+  channels.forEach((c, i) => {
+    for (const x of [...(c.categories ?? []), ...(c.tags ?? [])]) {
+      add(exactIndex, `name:${x.toLowerCase().trim()}`, i);
+      add(exactIndex, `slug:${slugify(x)}`, i);
+    }
+    for (const text of [c.title, ...(c.categories ?? []), ...(c.tags ?? [])]) words(text).forEach((w) => add(wordIndex, w, i));
+  });
+  return (n: MatchNiche): number => {
+    const exact = new Set([...(exactIndex.get(`name:${n.name.toLowerCase().trim()}`) ?? []), ...(exactIndex.get(`slug:${n.slug}`) ?? [])]);
+    if (exact.size >= MIN_EXACT) return exact.size;
+    const need = keywords(n.name);
+    if (!need.length) return exact.size;
+    let hits = [...(wordIndex.get(need[0]) ?? [])];
+    for (const w of need.slice(1)) {
+      const s = wordIndex.get(w);
+      hits = s ? hits.filter((i) => s.has(i)) : [];
+    }
+    return exact.size + hits.filter((i) => !exact.has(i)).length;
+  };
+}
+
 const norm = (h?: string) => (h ?? '').toLowerCase().trim().replace(/^@/, '');
 
 /** Outliers from the niche's channels (plus any tagged with the niche itself), highest multiplier first. */
