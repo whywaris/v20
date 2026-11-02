@@ -82,7 +82,7 @@ export default function Header() {
           {/* Sign in with Google (Gated modal trigger) */}
           <button
             onClick={() => {
-              alert('Supabase Google OAuth modal: Connect to unlock 7,467 channel revenue stats & daily growth charts.');
+              alert('Supabase Google OAuth modal: Connect to unlock 6,800+ channel revenue stats & daily growth charts.');
             }}
             className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 text-[13px] font-medium rounded-full border border-[var(--border-line-strong)] text-[var(--text-ink)] hover:bg-[var(--bg-surface-2)] transition-colors"
           >

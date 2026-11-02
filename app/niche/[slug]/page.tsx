@@ -386,7 +386,7 @@ export default async function NicheDetailPage({ params }: Props) {
           5 Viral Title Formulas for {niche.name}
         </h2>
         <p className="text-xs sm:text-sm text-[var(--text-muted)] mb-6">
-          Deconstructed from 20,000+ outlier videos that generated over 10x the channel subscriber count:
+          Deconstructed from 18,000+ outlier videos that generated over 10x the channel subscriber count:
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
           {niche.topTitleFormulas.map((formula, idx) => (

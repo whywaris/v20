@@ -5,8 +5,8 @@ import OutliersClient from '@/components/outliers/OutliersClient';
 import { VideoOutlierItem } from '@/types';
 
 export const metadata: Metadata = {
-  title: '20,210+ Viral YouTube Outlier Videos & Breakout Blueprints [2026] · YT Niches',
-  description: 'Inspect 20,210+ viral YouTube outlier videos that generated 5x to 50x higher viewership than channel averages. Filter by multiplier, duration, and niche category.',
+  title: '18,000+ Viral YouTube Outlier Videos & Breakout Blueprints [2026] · YT Niches',
+  description: 'Inspect 18,000+ viral YouTube outlier videos that generated 5x to 50x higher viewership than channel averages. Filter by multiplier, duration, and niche category.',
   keywords: [
     'youtube outlier videos',
     'viral youtube thumbnails',
@@ -20,16 +20,16 @@ export const metadata: Metadata = {
     canonical: 'https://ytniches.com/outliers',
   },
   openGraph: {
-    title: '20,210+ Viral YouTube Outlier Videos & Breakout Blueprints · YT Niches',
-    description: 'Deconstruct 20,210+ viral YouTube outlier videos that generated 5x to 50x higher viewership than channel averages.',
+    title: '18,000+ Viral YouTube Outlier Videos & Breakout Blueprints · YT Niches',
+    description: 'Deconstruct 18,000+ viral YouTube outlier videos that generated 5x to 50x higher viewership than channel averages.',
     url: 'https://ytniches.com/outliers',
     siteName: 'YT Niches',
     type: 'website'
   },
   twitter: {
     card: 'summary_large_image',
-    title: '20,210+ Viral YouTube Outlier Videos · YT Niches',
-    description: 'Deconstruct 20,210+ viral outlier video formulas and high-CTR thumbnail blueprints.'
+    title: '18,000+ Viral YouTube Outlier Videos · YT Niches',
+    description: 'Deconstruct 18,000+ viral outlier video formulas and high-CTR thumbnail blueprints.'
   }
 };
 
@@ -39,14 +39,14 @@ function getOutliersData() {
     if (fs.existsSync(filePath)) {
       const all: VideoOutlierItem[] = JSON.parse(fs.readFileSync(filePath, 'utf8'));
       return {
-        totalCount: all.length || 20210,
+        totalCount: all.length || 18086,
         initialVideos: all.slice(0, 36)
       };
     }
   } catch (err) {
     console.error('Error reading outliers:', err);
   }
-  return { totalCount: 20210, initialVideos: [] };
+  return { totalCount: 18086, initialVideos: [] };
 }
 
 export default function OutliersPage() {
@@ -62,7 +62,7 @@ export default function OutliersPage() {
             '@context': 'https://schema.org',
             '@type': 'CollectionPage',
             name: 'Viral YouTube Outlier Videos Vault',
-            description: 'Database of 20,210+ high-CTR YouTube thumbnails and viral titles.',
+            description: 'Database of 18,000+ high-CTR YouTube thumbnails and viral titles.',
             url: 'https://ytniches.com/outliers',
             numberOfItems: totalCount,
           }),

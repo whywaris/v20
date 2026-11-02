@@ -35,9 +35,9 @@ export default function AdminDashboardPage() {
 
   // Stats state
   const [stats, setStats] = useState({
-    channelsCount: 7445,
+    channelsCount: 6866,
     nichesCount: 2706,
-    outliersCount: 20210,
+    outliersCount: 18086,
     blogPostsCount: 4,
     status: 'healthy',
     canonicalUrl: 'https://ytniches.com/',
@@ -412,7 +412,7 @@ export default function AdminDashboardPage() {
                 {stats.channelsCount.toLocaleString()}
               </div>
               <div className="text-[11px] text-emerald-500 font-semibold mt-1">
-                ✓ 7,400+ Active Indexed
+                ✓ 6,800+ Active Indexed
               </div>
             </div>
 
@@ -511,7 +511,7 @@ export default function AdminDashboardPage() {
                   Inspect Outliers
                 </div>
                 <p className="text-xs text-[var(--text-muted)] mt-0.5">
-                  Browse 20,000+ breakout videos sorted by multiplier.
+                  Browse 18,000+ breakout videos sorted by multiplier.
                 </p>
               </Link>
             </div>

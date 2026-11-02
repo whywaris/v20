@@ -35,7 +35,7 @@ export default function NicheFaqAccordion({ nicheName, items }: NicheFaqAccordio
           Everything You Need to Know About {nicheName} on YouTube
         </h2>
         <p className="text-xs sm:text-sm text-[var(--text-muted)] mt-1.5 max-w-2xl">
-          Data-backed answers on monetization benchmarks, production stacks, and channel competition derived from over 7,400+ tracked YouTube creators.
+          Data-backed answers on monetization benchmarks, production stacks, and channel competition derived from over 6,800+ tracked YouTube creators.
         </p>
       </div>
 

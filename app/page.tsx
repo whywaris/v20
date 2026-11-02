@@ -5,8 +5,8 @@ import HomeClient from '@/components/home/HomeClient';
 import { Channel } from '@/types';
 
 export const metadata: Metadata = {
-  title: 'YT Niches · Find Profitable YouTube Niches, AI Avatars & 20,000+ Outliers [2026]',
-  description: 'Discover high-RPM YouTube niches, 7,400+ faceless & AI avatar channels, and 20,210+ viral outlier video formulas. Find proven channel ideas before you produce.',
+  title: 'YT Niches · Find Profitable YouTube Niches, AI Avatars & 18,000+ Outliers [2026]',
+  description: 'Discover high-RPM YouTube niches, 6,800+ low-competition faceless & AI avatar channels (under 250k subs), and 18,000+ viral outlier video formulas. Find proven channel ideas before you produce.',
   keywords: [
     'youtube niches',
     'profitable youtube niches 2026',
@@ -22,7 +22,7 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title: 'YT Niches · Find Profitable YouTube Niches & Viral Outliers [2026]',
-    description: 'Explore 7,400+ YouTube channels across 2,700+ niches with benchmark RPM ($1 - $25+), revenue analytics, and 20,210+ viral video blueprints.',
+    description: 'Explore 6,800+ low-competition YouTube channels (under 250k subs) across 2,700+ niches with benchmark RPM ($1 - $25+), revenue analytics, and 18,000+ viral video blueprints.',
     url: 'https://ytniches.com/',
     siteName: 'YT Niches',
     type: 'website'
@@ -30,7 +30,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'YT Niches · Find Profitable YouTube Niches & Viral Outliers',
-    description: 'Explore 7,400+ channels and 2,700+ niches with benchmark RPM, AI avatar formats, and viral outlier formulas.'
+    description: 'Explore 6,800+ low-competition channels and 2,700+ niches with benchmark RPM, AI avatar formats, and viral outlier formulas.'
   }
 };
 
@@ -42,7 +42,7 @@ const videosPath = path.join(dataDir, 'unified_outliers.json');
 
 let channels: Channel[] = [];
 let nichesCount = 2706;
-let videosCount = 20210;
+let videosCount = 18086;
 
 try {
   if (fs.existsSync(channelsPath)) {
@@ -60,7 +60,7 @@ try {
   console.error('Error reading JSON data files:', err);
 }
 
-  const totalChannelsCount = channels.length || 7445;
+  const totalChannelsCount = channels.length || 6866;
   const initialChannels: Channel[] = channels.slice(0, 36).map((c) => ({
     id: c.id,
     title: c.title,
@@ -111,7 +111,7 @@ export default function HomePage() {
             name: 'YT Niches',
             alternateName: ['YTNiches', 'YT Niches Hub'],
             url: 'https://ytniches.com/',
-            description: 'Directory of 7,400+ YouTube channels across 2,700+ niches with estimated RPM, revenue analytics, and viral video swipe files.',
+            description: 'Directory of 6,800+ low-competition YouTube channels (under 250k subs) across 2,700+ niches with estimated RPM, revenue analytics, and viral video swipe files.',
             potentialAction: {
               '@type': 'SearchAction',
               target: {

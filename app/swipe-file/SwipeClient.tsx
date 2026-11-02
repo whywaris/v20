@@ -45,7 +45,7 @@ export default function SwipeClient({ initialVideos }: Props) {
           The NexLev Inspiration Vault
         </div>
         <h1 className="text-3xl sm:text-4xl font-extrabold text-[var(--text-ink)] tracking-tight">
-          YouTube Viral Video Swipe File (20,217 Outliers)
+          YouTube Viral Video Swipe File (18,000+ Outliers)
         </h1>
         <p className="text-[15px] text-[var(--text-muted)] mt-1.5 max-w-2xl">
           High-performing video thumbnails and proven title packaging extracted across thousands of growing channels.

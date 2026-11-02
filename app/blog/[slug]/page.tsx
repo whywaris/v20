@@ -142,7 +142,7 @@ export default async function SingleBlogPostPage({ params }: Props) {
 
         <div className="glass rounded-xl p-5 border border-[var(--brand-accent)]/30 my-6">
           <div className="flex items-center gap-2 font-bold text-[14px] text-[var(--brand-mark)] mb-2">
-            <Sparkles className="size-4" /> Key Takeaway from 7,400+ Channels Dataset
+            <Sparkles className="size-4" /> Key Takeaway from 6,800+ Channels Dataset
           </div>
           <p className="text-[14px] text-[var(--text-ink)] m-0">
             Channels that pair AdSense with an authoritative backend digital offer (such as a $29 specialized guide, an old-fashioned recipe book, or an emergency preparedness checklist) generate an average of <strong>3.4x more total monthly profit</strong> compared to channels relying solely on YouTube ad monetization.
@@ -194,7 +194,7 @@ export default async function SingleBlogPostPage({ params }: Props) {
           href="/"
           className="btn-accent h-9 px-4 rounded-full text-xs font-semibold inline-flex items-center gap-1.5"
         >
-          Explore 7,400+ Channels &rarr;
+          Explore 6,800+ Channels &rarr;
         </Link>
       </div>
 

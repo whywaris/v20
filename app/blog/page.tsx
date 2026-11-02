@@ -24,7 +24,7 @@ export interface BlogPost {
 export const BLOG_POSTS: BlogPost[] = [
   {
     slug: 'top-high-rpm-youtube-niches-2026',
-    title: 'Top 10 High RPM YouTube Niches in 2026 (Real Data from 7,400+ Channels)',
+    title: 'Top 10 High RPM YouTube Niches in 2026 (Real Data from 6,800+ Channels)',
     excerpt: 'An exhaustive analysis of real YouTube AdSense RPM rates across Finance, Tech, History, and Spirituality. See which niches make $15-$25 per thousand views.',
     category: 'Monetization & RPM',
     date: 'Oct 24, 2026',
@@ -42,7 +42,7 @@ export const BLOG_POSTS: BlogPost[] = [
   },
   {
     slug: 'viral-youtube-title-formulas-deconstructed',
-    title: '20 Viral YouTube Title Formulas Deconstructed from 20,000 Outlier Videos',
+    title: '20 Viral YouTube Title Formulas Deconstructed from 18,000 Outlier Videos',
     excerpt: 'Stop guessing your video titles. Here are the 20 psychological curiosity-gap formulas responsible for over 500 million views across faceless YouTube channels.',
     category: 'Title Blueprints',
     date: 'Oct 15, 2026',
@@ -119,7 +119,7 @@ export default function BlogHubPage() {
           YouTube Growth, RPM &amp; Niche Playbooks
         </h1>
         <p className="text-[15.5px] text-[var(--text-muted)] mt-2 max-w-2xl">
-          Actionable blueprints and deep data breakdowns based on 7,400+ tracked YouTube channels and 20,000+ viral outlier videos.
+          Actionable blueprints and deep data breakdowns based on 6,800+ tracked YouTube channels and 18,000+ viral outlier videos.
         </p>
       </div>
 

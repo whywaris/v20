@@ -13,7 +13,7 @@ const fontSans = Plus_Jakarta_Sans({
 
 export const metadata: Metadata = {
   title: 'YT Niches · YouTube Channels & Viral Niches Directory',
-  description: 'Track 7,400+ YouTube channels across 2,700+ niches with estimated RPM, revenue analytics, and 20,000+ viral video swipe files.',
+  description: 'Track 6,800+ YouTube channels across 2,700+ niches with estimated RPM, revenue analytics, and 18,000+ viral video swipe files.',
   metadataBase: new URL('https://ytniches.com'),
   alternates: {
     canonical: 'https://ytniches.com/',
@@ -31,7 +31,7 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title: 'YT Niches · YouTube Channels & Viral Niches Directory',
-    description: 'Track 7,400+ YouTube channels across 2,700+ niches with estimated RPM and viral swipe files.',
+    description: 'Track 6,800+ YouTube channels across 2,700+ niches with estimated RPM and viral swipe files.',
     url: 'https://ytniches.com/',
     siteName: 'YT Niches',
     locale: 'en_US',
@@ -40,7 +40,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'YT Niches · YouTube Channels & Viral Niches Directory',
-    description: 'Track 7,400+ YouTube channels across 2,700+ niches with estimated RPM and viral swipe files.',
+    description: 'Track 6,800+ YouTube channels across 2,700+ niches with estimated RPM and viral swipe files.',
   }
 };
 

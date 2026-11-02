@@ -163,7 +163,7 @@ export default function HomeClient({
           <div className="lg:col-span-7">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[12px] font-semibold bg-[var(--brand-accent)]/10 text-[var(--brand-mark)] border border-[var(--brand-accent)]/20 mb-4">
               <Sparkles className="size-3.5 fill-[var(--brand-mark)]" />
-              Creator Intelligence &amp; Niche Hub
+              6,800+ Low-Competition Channels (Under 250k Subs)
             </div>
             
             <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-[var(--text-ink)] tracking-tight leading-[1.1] mb-4">
@@ -171,7 +171,7 @@ export default function HomeClient({
             </h1>
             
             <p className="text-[15.5px] text-[var(--text-muted)] leading-relaxed max-w-2xl mb-6">
-              Track 7,400+ AI Avatar and Faceless YouTube channels across 2,700+ niches. Discover verified AdSense RPM rates, revenue analytics, and viral outlier video blueprints.
+              Track 6,800+ low-competition AI Avatar and Faceless YouTube channels (under 250k subs) across 2,700+ niches. Discover verified AdSense RPM rates, revenue analytics, and viral outlier video blueprints.
             </p>
 
             {/* Live Counter Badges */}

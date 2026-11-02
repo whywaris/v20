@@ -35,7 +35,7 @@ const CATEGORIES = [
   'stories'
 ];
 
-export default function OutliersClient({ initialVideos, totalVideosCount = 20210 }: Props) {
+export default function OutliersClient({ initialVideos, totalVideosCount = 18086 }: Props) {
   const [search, setSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
   const [multiplierFilter, setMultiplierFilter] = useState('');
@@ -117,7 +117,7 @@ export default function OutliersClient({ initialVideos, totalVideosCount = 20210
       <div className="mb-10 border-b border-[var(--border-line)] pb-8">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-500 border border-amber-500/20 mb-3">
           <Flame className="size-3.5 fill-amber-500" />
-          The Outlier Vault (20,000+ Blueprints)
+          The Outlier Vault (18,000+ Blueprints)
         </div>
         <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-[var(--text-ink)] tracking-tight mb-3">
           Viral YouTube Outlier Videos
