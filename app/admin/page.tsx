@@ -26,6 +26,7 @@ import {
 } from 'lucide-react';
 import { Channel, Niche } from '@/types';
 import { formatNumber, formatCurrency } from '@/lib/utils';
+import { signInWithGoogle } from '@/lib/supabase/client';
 
 export default function AdminDashboardPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -96,6 +97,7 @@ export default function AdminDashboardPage() {
 
   const handleLogout = async () => {
     await fetch('/api/admin/login', { method: 'DELETE' }).catch(() => {});
+    await fetch('/auth/signout', { method: 'POST' }).catch(() => {}); // Google admins: end the Supabase session too
     setIsAuthenticated(false);
     setPasscode('');
   };
@@ -272,8 +274,16 @@ export default function AdminDashboardPage() {
             YT Niches Admin Portal
           </h1>
           <p className="text-xs text-[var(--text-muted)] mb-6">
-            Enter your secret administrative passcode to manage channels, programmatic niches, and platform settings.
+            Sign in with your admin Google account, or enter the admin password.
           </p>
+
+          <button
+            type="button"
+            onClick={signInWithGoogle}
+            className="w-full h-11 mb-4 rounded-xl border border-[var(--border-line-strong)] text-xs font-bold text-[var(--text-ink)] hover:bg-[var(--bg-surface-2)] transition-colors"
+          >
+            Sign in with Google
+          </button>
 
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
