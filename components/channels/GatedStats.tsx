@@ -2,12 +2,10 @@
 
 import React from 'react';
 import { Gift, Lock, TrendingUp } from 'lucide-react';
+import { signInWithGoogle } from '@/lib/supabase/client';
 
-// Everything here is free: signing in with Google is the only requirement. There are no paid plans.
+// Shown to logged-out visitors. Everything behind it is free: signing in with Google is the only requirement.
 export default function GatedStats() {
-  const handleUnlock = () => {
-    alert('Google sign-in is coming soon. All growth curves, earnings estimates and title patterns will be 100% free.');
-  };
 
   return (
     <div className="relative rounded-2xl overflow-hidden glass p-6 sm:p-8 border border-[var(--brand-accent)]/30 mb-8">
@@ -15,7 +13,7 @@ export default function GatedStats() {
         <div className="flex items-center gap-2">
           <TrendingUp className="size-5 text-[var(--brand-mark)]" />
           <h2 className="text-lg font-bold text-[var(--text-ink)]">
-            Daily Growth Charts &amp; AdSense Revenue Analytics
+            Member Insights &amp; AdSense Earnings Estimates
           </h2>
         </div>
       </div>
@@ -39,11 +37,11 @@ export default function GatedStats() {
           Free with Google Sign-In
         </h3>
         <p className="text-xs text-white/80 max-w-md mb-4">
-          Unlock 30-day growth curves, estimated monthly AdSense earnings, and viral title patterns completely free.
-          No credit card, no paid plans.
+          Unlock estimated monthly AdSense earnings, upload rhythm, what the channel sells, and viral title patterns
+          completely free. No credit card, no paid plans.
         </p>
         <button
-          onClick={handleUnlock}
+          onClick={signInWithGoogle}
           className="btn-accent min-h-11 px-6 rounded-full text-xs font-bold shadow-lg hover:scale-105 transition-transform"
         >
           Sign in with Google to Unlock (100% Free)

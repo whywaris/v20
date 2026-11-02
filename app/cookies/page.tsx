@@ -29,6 +29,7 @@ export default function CookiePolicyPage() {
         <p>These are needed for the site to work and do not track you across other websites:</p>
         <ul>
           <li><strong>Theme preference</strong> (<code>yt_theme</code>, local storage): remembers whether you chose dark or light mode.</li>
+          <li><strong>Sign-in session</strong> (<code>sb-…-auth-token</code>, cookie): set only if you sign in with Google, so you stay signed in. Removed when you sign out.</li>
           <li><strong>Admin session</strong> (<code>yt_admin</code>, cookie): set only when a site administrator logs in. Ordinary visitors never receive it.</li>
         </ul>
       </Section>

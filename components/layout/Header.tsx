@@ -3,16 +3,26 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Sparkles, Bookmark, Sun, Moon, LogIn, Compass, Layers, BookOpen, Flame, Menu, X, Shield } from 'lucide-react';
-
-const signIn = () => {
-  alert('Supabase Google OAuth modal: Connect to unlock 6,800+ channel revenue stats & daily growth charts.');
-};
+import { Sparkles, Bookmark, Sun, Moon, LogIn, LogOut, Compass, Layers, BookOpen, Flame, Menu, X, Shield } from 'lucide-react';
+import type { User } from '@supabase/supabase-js';
+import { createClient, signInWithGoogle } from '@/lib/supabase/client';
 
 export default function Header() {
   const pathname = usePathname();
   const [theme, setTheme] = useState<'light' | 'dark'>('dark');
   const [menuOpen, setMenuOpen] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
+
+  // Signed-in Google user (Supabase), kept in sync across sign-in/out.
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data }) => setUser(data.user));
+    const { data } = supabase.auth.onAuthStateChange((_event, session) => setUser(session?.user ?? null));
+    return () => data.subscription.unsubscribe();
+  }, []);
+  const userName = (user?.user_metadata?.full_name as string | undefined) || user?.email || '';
+  const userAvatar = user?.user_metadata?.avatar_url as string | undefined;
+  const signOutAction = `/auth/signout?next=${encodeURIComponent(pathname)}`;
 
   useEffect(() => {
     const savedTheme = (localStorage.getItem('yt_theme') as 'light' | 'dark') || 'dark';
@@ -99,14 +109,31 @@ export default function Header() {
             {theme === 'dark' ? <Sun className="size-4" /> : <Moon className="size-4" />}
           </button>
 
-          {/* Sign in with Google (Gated modal trigger) */}
-          <button
-            onClick={signIn}
-            className="hidden md:inline-flex items-center gap-1.5 px-3 py-1.5 text-[13px] font-medium rounded-full border border-[var(--border-line-strong)] text-[var(--text-ink)] hover:bg-[var(--bg-surface-2)] transition-colors"
-          >
-            <LogIn className="size-3.5 text-[var(--brand-mark)]" />
-            Sign In
-          </button>
+          {/* Google account: sign in, or avatar + sign out */}
+          {user ? (
+            <form action={signOutAction} method="post" className="hidden md:flex items-center gap-2">
+              {userAvatar ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={userAvatar} alt="" referrerPolicy="no-referrer" className="size-8 rounded-full border border-[var(--border-line)]" />
+              ) : null}
+              <button
+                type="submit"
+                title={`Signed in as ${userName}`}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[13px] font-medium rounded-full border border-[var(--border-line-strong)] text-[var(--text-ink)] hover:bg-[var(--bg-surface-2)] transition-colors"
+              >
+                <LogOut className="size-3.5" />
+                Sign out
+              </button>
+            </form>
+          ) : (
+            <button
+              onClick={signInWithGoogle}
+              className="hidden md:inline-flex items-center gap-1.5 px-3 py-1.5 text-[13px] font-medium rounded-full border border-[var(--border-line-strong)] text-[var(--text-ink)] hover:bg-[var(--bg-surface-2)] transition-colors"
+            >
+              <LogIn className="size-3.5 text-[var(--brand-mark)]" />
+              Sign In
+            </button>
+          )}
 
           {/* Newsletter Subscribe CTA */}
           <a
@@ -185,17 +212,30 @@ export default function Header() {
               <span className="text-[13px] text-[var(--text-muted)]">Switch to {theme === 'dark' ? 'light' : 'dark'}</span>
             </button>
 
-            <button
-              type="button"
-              onClick={() => {
-                closeMenu();
-                signIn();
-              }}
-              className="btn-accent flex h-12 w-full items-center justify-center gap-2 rounded-xl text-[15px] font-semibold shadow-md"
-            >
-              <LogIn className="size-[18px]" />
-              Sign in with Google
-            </button>
+            {user ? (
+              <form action={signOutAction} method="post" className="flex flex-col gap-2">
+                <p className="px-3 text-[13px] text-[var(--text-muted)] truncate">Signed in as {userName}</p>
+                <button
+                  type="submit"
+                  className="flex h-12 w-full items-center justify-center gap-2 rounded-xl border border-[var(--border-line-strong)] text-[15px] font-semibold text-[var(--text-ink)]"
+                >
+                  <LogOut className="size-[18px]" />
+                  Sign out
+                </button>
+              </form>
+            ) : (
+              <button
+                type="button"
+                onClick={() => {
+                  closeMenu();
+                  signInWithGoogle();
+                }}
+                className="btn-accent flex h-12 w-full items-center justify-center gap-2 rounded-xl text-[15px] font-semibold shadow-md"
+              >
+                <LogIn className="size-[18px]" />
+                Sign in with Google
+              </button>
+            )}
           </div>
         </nav>
       </div>

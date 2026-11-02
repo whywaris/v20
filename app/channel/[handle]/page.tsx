@@ -17,6 +17,8 @@ import {
 } from 'lucide-react';
 
 import GatedStats from '@/components/channels/GatedStats';
+import MemberInsights from '@/components/channels/MemberInsights';
+import { getUser } from '@/lib/supabase/server';
 
 interface Props {
   params: Promise<{ handle: string }>;
@@ -94,6 +96,7 @@ export default async function ChannelDetailPage({ params }: Props) {
   if (!channel) {
     notFound();
   }
+  const user = await getUser();
 
   return (
     <div className="mx-auto max-w-6xl px-4 sm:px-6 py-8">
@@ -234,8 +237,9 @@ export default async function ChannelDetailPage({ params }: Props) {
         </div>
       </div>
 
-      {/* Gated Stats Section (Supabase Google Auth Trigger) */}
-      <GatedStats />
+      {/* Free member insights: signed-in visitors see them, everyone else gets the Google sign-in prompt.
+          Rendered on the server, so logged-out HTML never contains the gated data. */}
+      {user ? <MemberInsights channel={channel} /> : <GatedStats />}
 
       {/* Top Videos / Swipe File */}
       {channel.popularVideos && channel.popularVideos.length > 0 && (
@@ -271,38 +275,6 @@ export default async function ChannelDetailPage({ params }: Props) {
               </a>
             ))}
           </div>
-        </div>
-      )}
-
-      {/* Title Patterns / Blueprints */}
-      {((channel.titlePatterns && channel.titlePatterns.length > 0) || (channel.deepAnalysis?.titlePatterns && channel.deepAnalysis.titlePatterns.length > 0)) && (
-        <div className="glass rounded-2xl p-6 border border-[var(--border-line)] mb-8">
-          <h2 className="text-lg font-bold text-[var(--text-ink)] mb-3 flex items-center gap-2">
-            <Sparkles className="size-4 text-[var(--brand-mark)]" />
-            Proven Title Formulas for Creators
-          </h2>
-          <ul className="space-y-2 text-sm text-[var(--text-ink)] list-disc pl-5">
-            {(channel.titlePatterns || channel.deepAnalysis?.titlePatterns || []).map((pat: string, i: number) => (
-              <li key={i} className="font-mono text-xs bg-[var(--bg-surface-2)] p-2 rounded-lg border border-[var(--border-line)] my-1">
-                {pat}
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-
-      {/* Why It Works Breakdown */}
-      {((channel.whyItWorks && channel.whyItWorks.length > 0) || (channel.deepAnalysis?.whyItWorks && channel.deepAnalysis.whyItWorks.length > 0)) && (
-        <div className="glass rounded-2xl p-6 border border-[var(--border-line)]">
-          <h2 className="text-lg font-bold text-[var(--text-ink)] mb-3 flex items-center gap-2">
-            <CheckCircle2 className="size-4 text-emerald-500" />
-            Why This Channel Works (Algorithm Analysis)
-          </h2>
-          <ul className="space-y-2 text-sm text-[var(--text-muted)] list-disc pl-5">
-            {(channel.whyItWorks || channel.deepAnalysis?.whyItWorks || []).map((reason: string, i: number) => (
-              <li key={i}>{reason}</li>
-            ))}
-          </ul>
         </div>
       )}
 

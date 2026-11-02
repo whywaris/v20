@@ -36,8 +36,10 @@ export default function PrivacyPolicyPage() {
       <Section title="2. Information we collect">
         <ul>
           <li>
-            <strong>No account required.</strong> You can browse the whole site without signing up. We do not currently
-            offer user accounts, so we do not store names, passwords or profile data.
+            <strong>Google sign-in (optional).</strong> You can browse the site without an account. If you choose
+            &quot;Sign in with Google&quot; to unlock free member insights, Google shares your name, email address and
+            profile picture with us. We never see your Google password. This account data is stored by our
+            authentication provider, Supabase, and used only to keep you signed in. Signing in is free.
           </li>
           <li>
             <strong>Server logs.</strong> Our hosting provider, Vercel, automatically records technical data such as IP
@@ -127,6 +129,7 @@ export default function PrivacyPolicyPage() {
         <p>We share information only with service providers that run the site, and only as needed:</p>
         <ul>
           <li><strong>Vercel Inc.</strong> (hosting and server logs)</li>
+          <li><strong>Supabase Inc.</strong> (sign-in and account storage, if you sign in with Google)</li>
           <li><strong>Google LLC</strong> (advertising through AdSense, when ads are shown)</li>
         </ul>
         <p>We may also disclose information if required by law or to protect the site and its users.</p>
