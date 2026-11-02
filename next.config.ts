@@ -27,6 +27,14 @@ const nextConfig: NextConfig = {
           },
         ],
       },
+      {
+        // Vercel serves /sitemap.xml as a static file with its own generic headers; match the sub-sitemaps.
+        source: '/sitemap.xml',
+        headers: [
+          { key: 'Content-Type', value: 'application/xml; charset=utf-8' },
+          { key: 'Cache-Control', value: 'public, max-age=3600, s-maxage=86400' },
+        ],
+      },
     ];
   },
   turbopack: {
