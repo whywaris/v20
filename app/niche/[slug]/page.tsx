@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { Niche, Channel, VideoOutlierItem } from '@/types';
 import ChannelCard from '@/components/channels/ChannelCard';
 import NicheRevenueCalculator from '@/components/niche/NicheRevenueCalculator';
+import AdSlot from '@/components/ads/AdSlot';
 import NicheFaqAccordion from '@/components/niche/NicheFaqAccordion';
 import { formatNumber } from '@/lib/utils';
 import {
@@ -330,6 +331,7 @@ export default async function NicheDetailPage({ params }: Props) {
 
       {/* 2. Live Interactive AdSense Revenue Calculator */}
       <NicheRevenueCalculator nicheName={niche.name} rpm={niche.rpm} />
+      <AdSlot format="rectangle" className="my-8" />
 
       {/* 3. Production & Format Blueprint */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 my-10">

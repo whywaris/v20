@@ -5,6 +5,7 @@ import { Channel } from '@/types';
 import ChannelCard from '@/components/channels/ChannelCard';
 import ChannelTableRow from '@/components/channels/ChannelTableRow';
 import FilterSidebar from '@/components/filters/FilterSidebar';
+import AdSlot from '@/components/ads/AdSlot';
 import {
   Sparkles,
   Layers,
@@ -39,6 +40,8 @@ const CATEGORY_CHIPS = [
   { label: '🏡 Frugal & Homestead', value: 'frugal living' },
   { label: '🧠 Education & Tech', value: 'Education' },
 ];
+
+const AD_EVERY = 12; // one in-feed ad after every 12th channel card / table row
 
 export default function HomeClient({
   initialChannels,
@@ -338,6 +341,9 @@ export default function HomeClient({
             </div>
           </div>
 
+          {/* Leaderboard ad above the directory */}
+          <AdSlot format="horizontal" className="mb-6" />
+
           {/* Results Render */}
           {channels.length === 0 && !loading ? (
             <div className="glass rounded-2xl p-12 text-center border border-[var(--border-line)]">
@@ -354,8 +360,14 @@ export default function HomeClient({
           ) : viewMode === 'grid' ? (
             <>
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-                {channels.map((channel) => (
-                  <ChannelCard key={channel.id || channel.handle} channel={channel} />
+                {channels.map((channel, i) => (
+                  <React.Fragment key={channel.id || channel.handle}>
+                    <ChannelCard channel={channel} />
+                    {/* In-feed ad after every 12th card, spanning the full row */}
+                    {(i + 1) % AD_EVERY === 0 && i + 1 < channels.length && (
+                      <AdSlot format="in-feed" className="col-span-full" />
+                    )}
+                  </React.Fragment>
                 ))}
               </div>
 
@@ -391,8 +403,17 @@ export default function HomeClient({
                     </tr>
                   </thead>
                   <tbody>
-                    {channels.map((channel) => (
-                      <ChannelTableRow key={channel.id || channel.handle} channel={channel} />
+                    {channels.map((channel, i) => (
+                      <React.Fragment key={channel.id || channel.handle}>
+                        <ChannelTableRow channel={channel} />
+                        {(i + 1) % AD_EVERY === 0 && i + 1 < channels.length && (
+                          <tr>
+                            <td colSpan={8} className="p-3">
+                              <AdSlot format="in-feed" />
+                            </td>
+                          </tr>
+                        )}
+                      </React.Fragment>
                     ))}
                   </tbody>
                 </table>

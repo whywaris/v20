@@ -4,6 +4,10 @@ import './globals.css';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import { ToastProvider } from '@/components/ui/Toast';
+import Script from 'next/script';
+
+// Public publisher ID (ca-pub-…). When unset, no AdSense script is loaded at all.
+const ADSENSE_CLIENT_ID = process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID;
 
 const fontSans = Plus_Jakarta_Sans({
   subsets: ['latin'],
@@ -82,6 +86,15 @@ export default function RootLayout({
           <main className="flex-1">{children}</main>
           <Footer />
         </ToastProvider>
+        {ADSENSE_CLIENT_ID && (
+          // afterInteractive: loads after the page is interactive, so it doesn't block rendering (LCP/INP).
+          <Script
+            id="adsense"
+            strategy="afterInteractive"
+            crossOrigin="anonymous"
+            src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE_CLIENT_ID}`}
+          />
+        )}
       </body>
     </html>
   );
