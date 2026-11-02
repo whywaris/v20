@@ -1,26 +1,19 @@
 import fs from 'node:fs';
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
-import { isValidSessionToken } from './admin-token';
+import { isValidSessionToken, isWhitelistedGoogleAdmin } from './admin-token';
 import { createClient, getUser } from './supabase/server';
 
 export { adminConfigured, createSessionToken, passwordMatches } from './admin-token';
 export const ADMIN_COOKIE = 'yt_admin';
 
-// Admin = the ADMIN_PASSWORD session cookie, OR a signed-in Google account whose profiles.role is 'admin'.
+// Admin = the ADMIN_PASSWORD session cookie, OR a signed-in Google account that is either listed in
+// ADMIN_EMAILS (Google-verified email only) or has profiles.role = 'admin'.
 export async function isAdmin(): Promise<boolean> {
   if (isValidSessionToken((await cookies()).get(ADMIN_COOKIE)?.value)) return true;
   const user = await getUser();
   if (!user) return false;
-
-  // Check email against ADMIN_EMAILS environment variable (comma-separated list)
-  const adminEmails = (process.env.ADMIN_EMAILS || '')
-    .split(',')
-    .map((e) => e.trim().toLowerCase())
-    .filter(Boolean);
-  if (user.email && adminEmails.includes(user.email.toLowerCase())) {
-    return true;
-  }
+  if (isWhitelistedGoogleAdmin(user)) return true;
 
   const supabase = await createClient();
   const { data } = await supabase.from('profiles').select('role').eq('id', user.id).maybeSingle(); // RLS: own row only
