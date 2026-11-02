@@ -50,7 +50,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" data-theme="dark" className={`${fontSans.variable} scroll-smooth`}>
+    // suppressHydrationWarning: the inline script below sets the saved data-theme before React hydrates (no theme flash),
+    // so this one attribute is expected to differ from the server HTML. Only applies to <html>'s own attributes.
+    <html lang="en" data-theme="dark" className={`${fontSans.variable} scroll-smooth`} suppressHydrationWarning>
       <head>
         {/* Preconnect & DNS-Prefetch Resource Hints for YouTube CDN Assets */}
         <link rel="preconnect" href="https://yt3.ggpht.com" crossOrigin="anonymous" />
