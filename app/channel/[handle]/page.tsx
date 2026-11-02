@@ -7,7 +7,6 @@ import { Channel } from '@/types';
 import { formatNumber, formatCurrency } from '@/lib/utils';
 import {
   Sparkles,
-  Lock,
   Play,
   CheckCircle2,
   ExternalLink,

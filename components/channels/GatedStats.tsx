@@ -1,11 +1,12 @@
 'use client';
 
 import React from 'react';
-import { Lock, TrendingUp } from 'lucide-react';
+import { Gift, Lock, TrendingUp } from 'lucide-react';
 
+// Everything here is free: signing in with Google is the only requirement. There are no paid plans.
 export default function GatedStats() {
   const handleUnlock = () => {
-    alert('Supabase Google OAuth modal: Sign in to unlock full revenue analytics, daily velocity charts, and monetization funnels.');
+    alert('Google sign-in is coming soon. All growth curves, earnings estimates and title patterns will be 100% free.');
   };
 
   return (
@@ -17,9 +18,6 @@ export default function GatedStats() {
             Daily Growth Charts &amp; AdSense Revenue Analytics
           </h2>
         </div>
-        <span className="text-xs font-semibold px-2.5 py-1 rounded-md bg-amber-500/10 text-amber-500 border border-amber-500/20 flex items-center gap-1">
-          <Lock className="size-3" /> Pro Member Area
-        </span>
       </div>
 
       {/* Blurred Content Placeholder */}
@@ -31,20 +29,24 @@ export default function GatedStats() {
 
       {/* Center Overlay Card */}
       <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center bg-black/40 backdrop-blur-md">
+        <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 flex items-center gap-1 mb-3">
+          <Gift className="size-3" /> Free Community Access
+        </span>
         <div className="size-12 rounded-full bg-[var(--brand-accent)] text-white flex items-center justify-center mb-3 shadow-lg">
           <Lock className="size-5" />
         </div>
         <h3 className="text-lg font-bold text-white mb-1">
-          Unlock Full Revenue &amp; Daily Velocity Stats
+          Free with Google Sign-In
         </h3>
         <p className="text-xs text-white/80 max-w-md mb-4">
-          Connect via Google to unlock 30-day growth tables, estimated monthly AdSense revenue, and digital offer funnels.
+          Unlock 30-day growth curves, estimated monthly AdSense earnings, and viral title patterns completely free.
+          No credit card, no paid plans.
         </p>
         <button
           onClick={handleUnlock}
-          className="btn-accent h-10 px-6 rounded-full text-xs font-bold shadow-lg hover:scale-105 transition-transform"
+          className="btn-accent min-h-11 px-6 rounded-full text-xs font-bold shadow-lg hover:scale-105 transition-transform"
         >
-          Sign In with Google to Unlock (Free)
+          Sign in with Google to Unlock (100% Free)
         </button>
       </div>
     </div>

@@ -4,7 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { Channel } from '@/types';
 import { formatNumber, formatCurrency } from '@/lib/utils';
-import { CheckCircle2, Lock, Bot, User, ArrowRight } from 'lucide-react';
+import { CheckCircle2, Bot, User, ArrowRight } from 'lucide-react';
 
 interface Props {
   channel: Channel;
@@ -86,8 +86,8 @@ export default function ChannelTableRow({ channel }: Props) {
         {channel.estimatedMonthlyRevenueUsd ? (
           formatCurrency(channel.estimatedMonthlyRevenueUsd)
         ) : (
-          <span className="inline-flex items-center gap-1 text-xs text-[var(--text-muted)] font-normal">
-            <Lock className="size-3" /> Locked
+          <span className="text-xs text-[var(--text-muted)] font-normal" title="No revenue estimate for this channel yet">
+            Not estimated
           </span>
         )}
       </td>

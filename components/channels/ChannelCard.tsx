@@ -4,7 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { Channel } from '@/types';
 import { formatNumber, formatCurrency } from '@/lib/utils';
-import { Lock, DollarSign, CheckCircle2, Play, Sparkles, User, Bot, ExternalLink } from 'lucide-react';
+import { DollarSign, CheckCircle2, Play, Sparkles, User, Bot, ExternalLink } from 'lucide-react';
 
 interface ChannelCardProps {
   channel: Channel;
@@ -102,8 +102,8 @@ export default function ChannelCard({ channel }: ChannelCardProps) {
                   <span className="text-[9.5px] text-[var(--text-muted)]">/mo</span>
                 </>
               ) : (
-                <span className="inline-flex items-center gap-1 text-[11px] text-[var(--text-muted)]">
-                  <Lock className="size-3" /> Pro Locked
+                <span className="text-[11px] font-medium text-[var(--text-muted)]" title="No revenue estimate for this channel yet">
+                  Not estimated
                 </span>
               )}
             </div>
