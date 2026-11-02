@@ -62,30 +62,41 @@ export default function AdminDashboardPage() {
   const [editingNiche, setEditingNiche] = useState<Partial<Niche> | null>(null);
   const [isAddNicheOpen, setIsAddNicheOpen] = useState(false);
 
-  // Check saved session
+  // The server decides who is admin (httpOnly session cookie); see /api/admin/login.
   useEffect(() => {
-    const saved = localStorage.getItem('yt_admin_session');
-    if (saved === 'authorized_2026') {
-      setIsAuthenticated(true);
-      fetchStats();
-    }
+    localStorage.removeItem('yt_admin_session'); // old client-side flag, no longer used
+    fetch('/api/admin/login')
+      .then((r) => r.json())
+      .then((s) => {
+        if (s.authenticated) {
+          setIsAuthenticated(true);
+          fetchStats();
+        }
+      })
+      .catch(() => {});
   }, []);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (passcode === 'ytniches2026' || passcode === 'admin123') {
+    const res = await fetch('/api/admin/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: passcode }),
+    }).catch(() => null);
+    if (res?.ok) {
       setIsAuthenticated(true);
-      localStorage.setItem('yt_admin_session', 'authorized_2026');
+      setPasscode('');
       showToast('Welcome to YT Niches Admin Panel!', 'success');
       fetchStats();
     } else {
-      showToast('Invalid passcode. Default is "ytniches2026"', 'error');
+      const err = await res?.json().catch(() => null);
+      showToast(err?.error || 'Login failed', 'error');
     }
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await fetch('/api/admin/login', { method: 'DELETE' }).catch(() => {});
     setIsAuthenticated(false);
-    localStorage.removeItem('yt_admin_session');
     setPasscode('');
   };
 
@@ -97,6 +108,7 @@ export default function AdminDashboardPage() {
   const fetchStats = async () => {
     try {
       const res = await fetch('/api/admin/stats');
+      if (res.status === 401) setIsAuthenticated(false); // session expired
       if (res.ok) {
         const data = await res.json();
         setStats(data);
@@ -269,7 +281,8 @@ export default function AdminDashboardPage() {
                 type="password"
                 value={passcode}
                 onChange={(e) => setPasscode(e.target.value)}
-                placeholder="Enter passcode (default: ytniches2026)"
+                placeholder="Admin password"
+                autoComplete="current-password"
                 className="w-full h-11 px-4 text-center tracking-widest text-sm rounded-xl bg-[var(--bg-surface-2)] border border-[var(--border-line)] text-[var(--text-ink)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--brand-mark)]"
                 autoFocus
               />

@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { requireAdmin, saveJson } from '@/lib/admin';
 import fs from 'node:fs';
 import path from 'node:path';
 import { Niche } from '@/types';
@@ -17,11 +18,13 @@ function readNiches(): Niche[] {
 }
 
 function writeNiches(niches: Niche[]) {
-  fs.writeFileSync(dataPath, JSON.stringify(niches, null, 2), 'utf8');
+  saveJson(dataPath, niches);
 }
 
 // GET: Paginated & filtered list of niches
 export async function GET(request: Request) {
+  const denied = await requireAdmin();
+  if (denied) return denied;
   const { searchParams } = new URL(request.url);
   const search = (searchParams.get('search') || '').toLowerCase().trim();
   const page = parseInt(searchParams.get('page') || '1', 10);
@@ -52,6 +55,8 @@ export async function GET(request: Request) {
 
 // POST: Add new niche
 export async function POST(request: Request) {
+  const denied = await requireAdmin();
+  if (denied) return denied;
   try {
     const body = await request.json();
     if (!body.name) {
@@ -94,6 +99,8 @@ export async function POST(request: Request) {
 
 // PUT: Update niche
 export async function PUT(request: Request) {
+  const denied = await requireAdmin();
+  if (denied) return denied;
   try {
     const body = await request.json();
     if (!body.slug) {
@@ -126,6 +133,8 @@ export async function PUT(request: Request) {
 
 // DELETE: Delete niche
 export async function DELETE(request: Request) {
+  const denied = await requireAdmin();
+  if (denied) return denied;
   try {
     const { searchParams } = new URL(request.url);
     const slug = searchParams.get('slug');

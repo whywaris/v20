@@ -1,8 +1,11 @@
 import { NextResponse } from 'next/server';
+import { requireAdmin } from '@/lib/admin';
 import fs from 'node:fs';
 import path from 'node:path';
 
 export async function GET() {
+  const denied = await requireAdmin();
+  if (denied) return denied;
   const dataDir = path.join(process.cwd(), 'data');
   const channelsPath = path.join(dataDir, 'unified_channels.json');
   const nichesPath = path.join(dataDir, 'unified_niches.json');

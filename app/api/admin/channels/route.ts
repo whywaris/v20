@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { requireAdmin, saveJson } from '@/lib/admin';
 import fs from 'node:fs';
 import path from 'node:path';
 import { Channel } from '@/types';
@@ -17,11 +18,13 @@ function readChannels(): Channel[] {
 }
 
 function writeChannels(channels: Channel[]) {
-  fs.writeFileSync(dataPath, JSON.stringify(channels, null, 2), 'utf8');
+  saveJson(dataPath, channels);
 }
 
 // GET: Paginated & filtered list of channels
 export async function GET(request: Request) {
+  const denied = await requireAdmin();
+  if (denied) return denied;
   const { searchParams } = new URL(request.url);
   const search = (searchParams.get('search') || '').toLowerCase().trim();
   const page = parseInt(searchParams.get('page') || '1', 10);
@@ -53,6 +56,8 @@ export async function GET(request: Request) {
 
 // POST: Add new channel
 export async function POST(request: Request) {
+  const denied = await requireAdmin();
+  if (denied) return denied;
   try {
     const body = await request.json();
     if (!body.title || !body.handle) {
@@ -102,6 +107,8 @@ export async function POST(request: Request) {
 
 // PUT: Update channel
 export async function PUT(request: Request) {
+  const denied = await requireAdmin();
+  if (denied) return denied;
   try {
     const body = await request.json();
     if (!body.id && !body.handle) {
@@ -138,6 +145,8 @@ export async function PUT(request: Request) {
 
 // DELETE: Delete channel
 export async function DELETE(request: Request) {
+  const denied = await requireAdmin();
+  if (denied) return denied;
   try {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
