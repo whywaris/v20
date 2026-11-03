@@ -139,7 +139,7 @@ export default async function ChannelDetailPage({ params }: Props) {
       <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-xs text-[var(--text-muted)] mb-6">
         <Link href="/" className="hover:text-[var(--text-ink)] transition-colors">Home</Link>
         <span className="text-[var(--border-line-strong)]">/</span>
-        <Link href="/" className="hover:text-[var(--text-ink)] transition-colors">Channels</Link>
+        <Link href="/channels" className="hover:text-[var(--text-ink)] transition-colors">Channels</Link>
         <span className="text-[var(--border-line-strong)]">/</span>
         <span className="text-[var(--text-ink)] font-semibold truncate" aria-current="page">{channel.title}</span>
       </nav>
@@ -157,11 +157,6 @@ export default async function ChannelDetailPage({ params }: Props) {
               <h1 className="text-2xl sm:text-3xl font-extrabold text-[var(--text-ink)]">
                 {channel.title}
               </h1>
-              {channel.monetization && (
-                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
-                  <CheckCircle2 className="size-3" /> Monetized
-                </span>
-              )}
             </div>
 
             <p className="text-[14px] text-[var(--text-muted)] mb-3">
