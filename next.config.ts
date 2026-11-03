@@ -12,6 +12,15 @@ const nextConfig: NextConfig = {
       { protocol: 'https', hostname: 'images.unsplash.com' },
     ],
   },
+  // The four built-in template articles were removed; send their old URLs to the blog instead of a 404.
+  async redirects() {
+    return [
+      'top-high-rpm-youtube-niches-2026',
+      'how-to-build-faceless-history-channel-ai',
+      'viral-youtube-title-formulas-deconstructed',
+      'monetizing-youtube-beyond-adsense-ebooks-funnels',
+    ].map((slug) => ({ source: `/blog/${slug}`, destination: '/blog', permanent: true }));
+  },
   async headers() {
     return [
       {

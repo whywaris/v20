@@ -1,34 +1,29 @@
 import { createClient } from '@supabase/supabase-js';
 
+// Blog posts live in the Supabase `posts` table and are written in /admin/blog.
+
 export type Post = {
   slug: string;
   title: string;
   excerpt: string;
-  content: string; // Markdown. Empty for the built-in default posts (they use the template article body).
+  content: string; // Markdown
   category: string;
+  categorySlug: string;
   date: string; // e.g. "Oct 24, 2026"
+  publishedAt: string | null; // ISO; in the future = scheduled
+  updatedAt: string;
   readTime: string; // e.g. "8 min read"
   coverImage: string;
   status: 'published' | 'draft';
-  source: 'default' | 'database';
+  seoTitle: string;
+  seoDescription: string;
 };
-
-/** @deprecated name kept for older imports */
-export type BlogPost = Post;
-
-const img = (id: string) => `https://images.unsplash.com/${id}?w=800&auto=format&fit=crop&q=60`;
-const preset = (p: Omit<Post, 'content' | 'status' | 'source'>): Post => ({ ...p, content: '', status: 'published', source: 'default' });
-
-// Built-in posts, shown until posts with the same slug are written in /admin (which then replace them).
-export const DEFAULT_POSTS: Post[] = [
-  preset({ slug: 'top-high-rpm-youtube-niches-2026', title: 'Top 10 High RPM YouTube Niches in 2026 (Real Data from 6,800+ Channels)', excerpt: 'An exhaustive analysis of real YouTube AdSense RPM rates across Finance, Tech, History, and Spirituality. See which niches make $15-$25 per thousand views.', category: 'Monetization & RPM', date: 'Oct 24, 2026', readTime: '8 min read', coverImage: img('photo-1551288049-bebda4e38f71') }),
-  preset({ slug: 'how-to-build-faceless-history-channel-ai', title: 'How to Build a 100K Subscriber Faceless History Channel Using AI Tools', excerpt: 'Step-by-step case study deconstructing how channels like Chloe VS History and The Crystalier generate millions of views with AI scripts and cinematic visuals.', category: 'Case Studies', date: 'Oct 20, 2026', readTime: '12 min read', coverImage: img('photo-1461360370896-922624d12aa1') }),
-  preset({ slug: 'viral-youtube-title-formulas-deconstructed', title: '20 Viral YouTube Title Formulas Deconstructed from 18,000 Outlier Videos', excerpt: 'Stop guessing your video titles. Here are the 20 psychological curiosity-gap formulas responsible for over 500 million views across faceless YouTube channels.', category: 'Title Blueprints', date: 'Oct 15, 2026', readTime: '10 min read', coverImage: img('photo-1618005182384-a83a8bd57fbe') }),
-  preset({ slug: 'monetizing-youtube-beyond-adsense-ebooks-funnels', title: 'How Faceless Channels Make $10,000/Month Selling Digital Products on Gumroad', excerpt: 'Why relying solely on AdSense is leaving 80% of your revenue on the table. A breakdown of digital cookbooks, survival guides, and Notion bundles.', category: 'Digital Products', date: 'Oct 10, 2026', readTime: '9 min read', coverImage: img('photo-1553729459-efe14ef6055d') }),
-];
 
 export const slugifyPost = (s: string) =>
   s.toLowerCase().trim().replace(/&/g, ' and ').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 90);
+
+export const DEFAULT_CATEGORY = 'Guides';
+export const categorySlug = (category: string) => slugifyPost(category) || slugifyPost(DEFAULT_CATEGORY);
 
 export const readTimeFor = (markdown: string) =>
   `${Math.max(1, Math.round(markdown.trim().split(/\s+/).filter(Boolean).length / 200))} min read`;
@@ -36,31 +31,43 @@ export const readTimeFor = (markdown: string) =>
 const formatDate = (iso: string | null) =>
   new Date(iso ?? Date.now()).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' });
 
-// Row shape of the Supabase `posts` table (see supabase/migrations/0004 and 0005).
+// Row shape of the Supabase `posts` table (migrations 0004, 0005, 0007).
 export type PostRow = {
   slug: string; title: string; description: string | null; body_md: string; cover_url: string | null;
   status: 'published' | 'draft'; published_at: string | null; category: string | null; updated_at: string;
+  seo_title?: string | null; seo_description?: string | null;
 };
-export const POST_COLUMNS = 'slug, title, description, body_md, cover_url, status, published_at, category, updated_at';
+const BASE_COLUMNS = 'slug, title, description, body_md, cover_url, status, published_at, category, updated_at';
+export const POST_COLUMNS = `${BASE_COLUMNS}, seo_title, seo_description`;
 
 export function fromRow(r: PostRow): Post {
+  const category = r.category || DEFAULT_CATEGORY;
   return {
     slug: r.slug,
     title: r.title,
     excerpt: r.description ?? '',
     content: r.body_md ?? '',
-    category: r.category || 'Guides',
+    category,
+    categorySlug: categorySlug(category),
     date: formatDate(r.published_at ?? r.updated_at),
+    publishedAt: r.published_at,
+    updatedAt: r.updated_at,
     readTime: readTimeFor(r.body_md ?? ''),
     coverImage: r.cover_url ?? '',
     status: r.status,
-    source: 'database',
+    seoTitle: r.seo_title ?? '',
+    seoDescription: r.seo_description ?? '',
   };
 }
+
+/** Published and its date has arrived (a future date means scheduled). */
+export const isLive = (p: Pick<Post, 'status' | 'publishedAt'>, now = Date.now()) =>
+  p.status === 'published' && (!p.publishedAt || Date.parse(p.publishedAt) <= now);
 
 export type PostInput = {
   slug: string; originalSlug: string | null; title: string; excerpt: string; content: string;
   category: string; coverImage: string; status: 'published' | 'draft';
+  seoTitle: string; seoDescription: string; publishAt: string | null;
 };
 
 /** Validates an admin's post form. Slug defaults to the title; cover image must be an http(s) URL. */
@@ -81,34 +88,59 @@ export function validatePostInput(body: unknown): { ok: true; value: PostInput }
   if (coverImage && (!/^https?:\/\//i.test(coverImage) || coverImage.length > 500)) {
     return { ok: false, error: 'Cover image must be an http(s) URL.' };
   }
+  const seoTitle = str('seoTitle');
+  if (seoTitle.length > 70) return { ok: false, error: 'SEO title must be at most 70 characters.' };
+  const seoDescription = str('seoDescription');
+  if (seoDescription.length > 170) return { ok: false, error: 'SEO description must be at most 170 characters.' };
+  const publishAtRaw = str('publishAt');
+  const publishAt = publishAtRaw && Number.isFinite(Date.parse(publishAtRaw)) ? new Date(publishAtRaw).toISOString() : null;
+  if (publishAtRaw && !publishAt) return { ok: false, error: 'Publish date is not a valid date.' };
   const status = b.status === 'draft' ? 'draft' : 'published';
   const original = str('originalSlug');
-  return { ok: true, value: { slug, originalSlug: original || null, title, excerpt, content, category, coverImage, status } };
+  return {
+    ok: true,
+    value: { slug, originalSlug: original || null, title, excerpt, content, category, coverImage, status, seoTitle, seoDescription, publishAt },
+  };
 }
 
-const sortByDate =(posts: Post[]) => [...posts].sort((a, b) => Date.parse(`${b.date} UTC`) - Date.parse(`${a.date} UTC`));
+const newestFirst = (posts: Post[]) =>
+  [...posts].sort((a, b) => Date.parse(b.publishedAt ?? b.updatedAt) - Date.parse(a.publishedAt ?? a.updatedAt));
 
-/** Published posts for the public blog: database posts, plus defaults whose slug isn't taken. Never throws. */
+/** Live posts for the public blog, newest first. Never throws (an empty blog on errors). */
 export async function getPublishedPosts(): Promise<Post[]> {
-  let rows: PostRow[] = [];
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  if (url && key) {
-    try {
-      // Anonymous client: RLS only returns published posts.
-      const db = createClient(url, key, { auth: { persistSession: false } });
-      const { data, error } = await db.from('posts').select(POST_COLUMNS).eq('status', 'published');
-      if (error) console.error('posts: falling back to defaults:', error.message);
-      rows = (data as PostRow[] | null) ?? [];
-    } catch (e) {
-      console.error('posts: falling back to defaults:', e);
-    }
+  if (!url || !key) return [];
+  const db = createClient(url, key, { auth: { persistSession: false } });
+  try {
+    // Anonymous client: RLS only returns published posts. Falls back to the older columns if 0007 hasn't run.
+    let res: { data: unknown; error: { message: string } | null } = await db.from('posts').select(POST_COLUMNS).eq('status', 'published');
+    if (res.error && /seo_/.test(res.error.message)) res = await db.from('posts').select(BASE_COLUMNS).eq('status', 'published');
+    if (res.error) throw res.error;
+    return newestFirst(((res.data as PostRow[] | null) ?? []).map(fromRow).filter((p) => isLive(p)));
+  } catch (e) {
+    console.error('posts unavailable:', (e as Error).message);
+    return [];
   }
-  const fromDb = rows.map(fromRow);
-  const taken = new Set(fromDb.map((p) => p.slug));
-  return sortByDate([...fromDb, ...DEFAULT_POSTS.filter((p) => !taken.has(p.slug))]);
 }
 
 export async function getPublishedPost(slug: string): Promise<Post | null> {
   return (await getPublishedPosts()).find((p) => p.slug === slug) ?? null;
+}
+
+/** Categories that have live posts, with counts, most posts first. */
+export function categoriesOf(posts: Post[]) {
+  const map = new Map<string, { name: string; slug: string; count: number }>();
+  for (const p of posts) {
+    const c = map.get(p.categorySlug) ?? { name: p.category, slug: p.categorySlug, count: 0 };
+    c.count++;
+    map.set(p.categorySlug, c);
+  }
+  return [...map.values()].sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
+}
+
+/** Up to `n` other posts, same category first, then the newest. */
+export function relatedPosts(post: Post, all: Post[], n = 3) {
+  const others = all.filter((p) => p.slug !== post.slug);
+  return [...others.filter((p) => p.categorySlug === post.categorySlug), ...others.filter((p) => p.categorySlug !== post.categorySlug)].slice(0, n);
 }

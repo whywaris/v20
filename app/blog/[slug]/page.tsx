@@ -1,10 +1,13 @@
-import React from 'react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
-import { Calendar, Clock, ArrowLeft, Share2, Sparkles, CheckCircle2 } from 'lucide-react';
-import { marked } from 'marked';
-import { getPublishedPost } from '@/lib/posts';
+import { ArrowRight, Calendar, Clock, ListOrdered } from 'lucide-react';
+import PostCard, { toCard } from '@/components/blog/PostCard';
+import ReadingProgress from '@/components/blog/ReadingProgress';
+import ShareButtons from '@/components/blog/ShareButtons';
+import { renderArticle } from '@/lib/markdown';
+import { getPublishedPosts, relatedPosts } from '@/lib/posts';
+import { OPERATOR_NAME, SITE_URL } from '@/lib/site';
 
 // Refreshed every 5 minutes; saving a post in /admin refreshes it immediately.
 export const revalidate = 300;
@@ -13,204 +16,182 @@ interface Props {
   params: Promise<{ slug: string }>;
 }
 
+async function load(slug: string) {
+  const posts = await getPublishedPosts();
+  const post = posts.find((p) => p.slug === slug);
+  return post ? { post, related: relatedPosts(post, posts) } : null;
+}
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const post = await getPublishedPost(slug);
-  if (!post) return { title: 'Post Not Found' };
-
+  const found = await load(slug);
+  if (!found) return { title: 'Article not found · YT Niches' };
+  const { post } = found;
+  const title = post.seoTitle || `${post.title} · YT Niches Blog`;
+  const description = post.seoDescription || post.excerpt;
   return {
-    title: `${post.title} · YT Niches Blog`,
-    description: post.excerpt,
-    alternates: {
-      canonical: `https://ytniches.com/blog/${slug}`,
-    },
+    title,
+    description,
+    alternates: { canonical: `${SITE_URL}/blog/${post.slug}` },
     openGraph: {
-      title: post.title,
-      description: post.excerpt,
+      title: post.seoTitle || post.title,
+      description,
       type: 'article',
-      publishedTime: post.date,
-      images: [post.coverImage],
+      publishedTime: post.publishedAt ?? undefined,
+      modifiedTime: post.updatedAt,
+      section: post.category,
+      images: post.coverImage ? [post.coverImage] : undefined,
     },
+    twitter: { card: 'summary_large_image', title: post.seoTitle || post.title, description },
   };
 }
 
-export default async function SingleBlogPostPage({ params }: Props) {
+export default async function BlogPostPage({ params }: Props) {
   const { slug } = await params;
-  const post = await getPublishedPost(slug);
-
-  if (!post) {
-    notFound();
-  }
+  const found = await load(slug);
+  if (!found) notFound();
+  const { post, related } = found;
+  const { html, toc } = renderArticle(post.content);
+  const url = `${SITE_URL}/blog/${post.slug}`;
 
   return (
-    <article className="mx-auto max-w-4xl px-4 sm:px-6 py-10">
-      
-      {/* 1. Schema.org Article JSON-LD */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            '@context': 'https://schema.org',
-            '@type': 'Article',
-            headline: post.title,
-            description: post.excerpt,
-            image: post.coverImage,
-            datePublished: post.date,
-            author: {
-              '@type': 'Organization',
-              name: 'YT Niches Intelligence Team',
-              url: 'https://ytniches.com',
-            },
-          }),
-        }}
-      />
-
-      {/* 2. Schema.org BreadcrumbList */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            '@context': 'https://schema.org',
-            '@type': 'BreadcrumbList',
-            itemListElement: [
+    <>
+      <ReadingProgress targetId="article-body" />
+      <article className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify([
               {
-                '@type': 'ListItem',
-                position: 1,
-                name: 'Home',
-                item: 'https://ytniches.com/'
+                '@context': 'https://schema.org',
+                '@type': 'BlogPosting',
+                headline: post.title,
+                description: post.seoDescription || post.excerpt,
+                image: post.coverImage || undefined,
+                datePublished: post.publishedAt,
+                dateModified: post.updatedAt,
+                articleSection: post.category,
+                author: { '@type': 'Person', name: OPERATOR_NAME, url: `${SITE_URL}/about` },
+                publisher: { '@type': 'Organization', name: 'YT Niches', url: SITE_URL },
+                mainEntityOfPage: url,
               },
               {
-                '@type': 'ListItem',
-                position: 2,
-                name: 'Blog',
-                item: 'https://ytniches.com/blog'
+                '@context': 'https://schema.org',
+                '@type': 'BreadcrumbList',
+                itemListElement: [
+                  { '@type': 'ListItem', position: 1, name: 'Home', item: `${SITE_URL}/` },
+                  { '@type': 'ListItem', position: 2, name: 'Blog', item: `${SITE_URL}/blog` },
+                  { '@type': 'ListItem', position: 3, name: post.category, item: `${SITE_URL}/blog/category/${post.categorySlug}` },
+                  { '@type': 'ListItem', position: 4, name: post.title, item: url },
+                ],
               },
-              {
-                '@type': 'ListItem',
-                position: 3,
-                name: post.title,
-                item: `https://ytniches.com/blog/${slug}`
-              }
-            ]
-          }),
-        }}
-      />
-
-      {/* Semantic Breadcrumb Navigation */}
-      <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-xs text-[var(--text-muted)] mb-6">
-        <Link href="/" className="hover:text-[var(--text-ink)] transition-colors">Home</Link>
-        <span className="text-[var(--border-line-strong)]">/</span>
-        <Link href="/blog" className="hover:text-[var(--text-ink)] transition-colors">Blog</Link>
-        <span className="text-[var(--border-line-strong)]">/</span>
-        <span className="text-[var(--text-ink)] font-semibold truncate" aria-current="page">{post.title}</span>
-      </nav>
-
-      {/* Header */}
-      <div className="mb-8">
-        <span className="px-3 py-1 text-[11px] font-semibold rounded-full bg-[var(--brand-accent)]/10 text-[var(--brand-mark)] border border-[var(--brand-accent)]/20 mb-3 inline-block">
-          {post.category}
-        </span>
-        <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-[var(--text-ink)] tracking-tight leading-[1.15] mb-4">
-          {post.title}
-        </h1>
-        <div className="flex items-center gap-4 text-[13px] text-[var(--text-muted)] pb-6 border-b border-[var(--border-line)]">
-          <span className="flex items-center gap-1.5">
-            <Calendar className="size-3.5" /> {post.date}
-          </span>
-          <span>&bull;</span>
-          <span className="flex items-center gap-1.5">
-            <Clock className="size-3.5" /> {post.readTime}
-          </span>
-          <span>&bull;</span>
-          <span>By YT Niches Research Team</span>
-        </div>
-      </div>
-
-      {/* Cover Image */}
-      {post.coverImage && (
-        <div className="relative aspect-[16/9] w-full rounded-2xl overflow-hidden mb-10 border border-[var(--border-line)]">
-          <img src={post.coverImage} alt={post.title} className="size-full object-cover" />
-        </div>
-      )}
-
-      {/* Article Content: posts written in /admin are Markdown (admin-only authors); built-in posts use the template below. */}
-      {post.content ? (
-        <div
-          className="prose-post max-w-none text-[15.5px] leading-relaxed text-[var(--text-ink)]"
-          dangerouslySetInnerHTML={{ __html: marked.parse(post.content) as string }}
+            ]),
+          }}
         />
-      ) : (
-      <div className="prose prose-invert max-w-none text-[15.5px] leading-relaxed text-[var(--text-ink)] space-y-6">
-        <p className="text-lg font-medium text-[var(--text-muted)] leading-relaxed">
-          {post.excerpt}
-        </p>
 
-        <h2 className="text-2xl font-bold text-[var(--text-ink)] mt-8 mb-4 border-b border-[var(--border-line)] pb-2">
-          1. The Paradigm Shift in YouTube Automation
-        </h2>
-        <p>
-          In recent years, the landscape of YouTube content creation has evolved drastically. Gone are the days when generic voice-over compilation channels could easily build a sustainable business. Today, the highest-performing channels are hyper-specialized, focused on high-retention formats like <strong>first-person avatar storytelling, investigative history documentaries, and aesthetic lifestyle breakdowns</strong>.
-        </p>
+        <nav aria-label="Breadcrumb" className="mb-6 flex flex-wrap items-center gap-2 text-xs text-[var(--text-muted)]">
+          <Link href="/" className="hover:text-[var(--text-ink)]">Home</Link>
+          <span className="text-[var(--border-line-strong)]">/</span>
+          <Link href="/blog" className="hover:text-[var(--text-ink)]">Blog</Link>
+          <span className="text-[var(--border-line-strong)]">/</span>
+          <Link href={`/blog/category/${post.categorySlug}`} className="hover:text-[var(--text-ink)]">{post.category}</Link>
+        </nav>
 
-        <div className="glass rounded-xl p-5 border border-[var(--brand-accent)]/30 my-6">
-          <div className="flex items-center gap-2 font-bold text-[14px] text-[var(--brand-mark)] mb-2">
-            <Sparkles className="size-4" /> Key Takeaway from 6,800+ Channels Dataset
+        <header className="mx-auto max-w-3xl">
+          <Link href={`/blog/category/${post.categorySlug}`} className="inline-block rounded-full bg-[var(--brand-accent)]/10 px-3 py-1 text-[12px] font-semibold text-[var(--brand-mark)]">
+            {post.category}
+          </Link>
+          <h1 className="mt-4 text-3xl font-bold leading-[1.12] tracking-tight text-[var(--text-ink)] sm:text-5xl">{post.title}</h1>
+          {post.excerpt && <p className="mt-4 text-[18px] leading-relaxed text-[var(--text-muted)]">{post.excerpt}</p>}
+          <div className="mt-6 flex flex-wrap items-center gap-x-4 gap-y-2 border-b border-[var(--border-line)] pb-6 text-[13px] text-[var(--text-muted)]">
+            <span className="flex items-center gap-2">
+              <span className="flex size-7 items-center justify-center rounded-full bg-[var(--brand-accent)] text-[11px] font-bold text-white">
+                {OPERATOR_NAME.split(' ').map((w) => w[0]).join('')}
+              </span>
+              <span className="font-semibold text-[var(--text-ink)]">{OPERATOR_NAME}</span>
+            </span>
+            <span className="flex items-center gap-1.5"><Calendar className="size-3.5" /> {post.date}</span>
+            <span className="flex items-center gap-1.5"><Clock className="size-3.5" /> {post.readTime}</span>
           </div>
-          <p className="text-[14px] text-[var(--text-ink)] m-0">
-            Channels that pair AdSense with an authoritative backend digital offer (such as a $29 specialized guide, an old-fashioned recipe book, or an emergency preparedness checklist) generate an average of <strong>3.4x more total monthly profit</strong> compared to channels relying solely on YouTube ad monetization.
-          </p>
+        </header>
+
+        {post.coverImage && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={post.coverImage} alt="" className="mx-auto mt-8 aspect-[16/9] w-full max-w-4xl rounded-2xl border border-[var(--border-line)] object-cover" />
+        )}
+
+        <div className={`mx-auto mt-10 grid gap-10 ${toc.length >= 3 ? 'max-w-5xl lg:grid-cols-[1fr_240px]' : 'max-w-3xl'}`}>
+          <div id="article-body" className="min-w-0">
+            {toc.length >= 3 && (
+              <details className="mb-8 rounded-2xl border border-[var(--border-line)] bg-[var(--bg-surface)] p-4 lg:hidden">
+                <summary className="flex cursor-pointer items-center gap-2 text-[14px] font-bold text-[var(--text-ink)]">
+                  <ListOrdered className="size-4 text-[var(--brand-mark)]" /> In this article
+                </summary>
+                <Toc items={toc} />
+              </details>
+            )}
+            <div className="prose-post max-w-none text-[16.5px] leading-[1.8] text-[var(--text-ink)]" dangerouslySetInnerHTML={{ __html: html }} />
+
+            <div className="mt-10 border-t border-[var(--border-line)] pt-6">
+              <ShareButtons url={url} title={post.title} />
+            </div>
+
+            <aside className="mt-8 flex flex-col gap-4 rounded-2xl border border-[var(--border-line)] bg-[var(--bg-surface)] p-5 sm:flex-row sm:items-center">
+              <span className="flex size-12 shrink-0 items-center justify-center rounded-full bg-[var(--brand-accent)] text-[15px] font-bold text-white">
+                {OPERATOR_NAME.split(' ').map((w) => w[0]).join('')}
+              </span>
+              <div className="flex-1">
+                <div className="text-[13px] text-[var(--text-muted)]">Written by</div>
+                <div className="font-bold text-[var(--text-ink)]">{OPERATOR_NAME}</div>
+                <p className="mt-1 text-[14px] text-[var(--text-muted)]">
+                  Founder of YT Niches. Studies how small YouTube channels find an audience and turn it into income.{' '}
+                  <Link href="/about" className="font-semibold text-[var(--brand-mark)] hover:underline">About us</Link>
+                </p>
+              </div>
+            </aside>
+          </div>
+
+          {toc.length >= 3 && (
+            <aside className="hidden lg:block">
+              <div className="sticky top-24">
+                <div className="mb-3 text-[12px] font-bold uppercase tracking-wider text-[var(--text-muted)]">In this article</div>
+                <Toc items={toc} />
+              </div>
+            </aside>
+          )}
         </div>
 
-        <h2 className="text-2xl font-bold text-[var(--text-ink)] mt-8 mb-4 border-b border-[var(--border-line)] pb-2">
-          2. The Top RPM Benchmarks by Category
-        </h2>
-        <p>
-          Based on data aggregated from thousands of monetized creator channels in the YT Niches database, here is the current RPM benchmark landscape:
-        </p>
+        <section className="mx-auto mt-16 max-w-5xl rounded-3xl border border-[var(--border-line)] bg-[var(--bg-surface)] p-6 text-center sm:p-10">
+          <h2 className="text-2xl font-bold text-[var(--text-ink)]">Find your niche with real numbers</h2>
+          <p className="mx-auto mt-2 max-w-lg text-[15px] text-[var(--text-muted)]">Browse 6,800+ small channels under 250k subscribers with RPM estimates and their best videos.</p>
+          <Link href="/channels" className="btn-accent mt-6 inline-flex h-11 items-center gap-2 rounded-full px-6 text-[14px]">
+            Browse channels <ArrowRight className="size-4" />
+          </Link>
+        </section>
 
-        <ul className="space-y-3 my-4 list-disc pl-5 text-[14.5px]">
-          <li><strong>Personal Finance &amp; Frugal Living:</strong> $12.00 – $24.00 RPM</li>
-          <li><strong>AI, Software &amp; Tech Tutorials:</strong> $9.00 – $18.50 RPM</li>
-          <li><strong>Investigative History &amp; Crime:</strong> $7.50 – $15.00 RPM</li>
-          <li><strong>Spirituality, Myths &amp; Crystals:</strong> $6.00 – $13.50 RPM</li>
-          <li><strong>Homesteading &amp; Traditional Cooking:</strong> $4.50 – $9.50 RPM</li>
-        </ul>
+        {related.length > 0 && (
+          <section className="mx-auto mt-16 max-w-5xl" aria-labelledby="related-title">
+            <h2 id="related-title" className="mb-6 text-2xl font-bold text-[var(--text-ink)]">Keep reading</h2>
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {related.map((p) => (
+                <PostCard key={p.slug} post={toCard(p)} />
+              ))}
+            </div>
+          </section>
+        )}
+      </article>
+    </>
+  );
+}
 
-        <h2 className="text-2xl font-bold text-[var(--text-ink)] mt-8 mb-4 border-b border-[var(--border-line)] pb-2">
-          3. How to Execute: The 3-Step Action Plan
-        </h2>
-        <p>
-          If you are planning to launch or scale a new channel, follow this proven sequence:
-        </p>
-
-        <ol className="space-y-3 my-4 list-decimal pl-5 text-[14.5px]">
-          <li><strong>Validate with Outliers:</strong> Search our <Link href="/swipe-file" className="text-[var(--brand-mark)] underline">Swipe File Vault</Link> for videos in your niche that received 10x more views than the channel has subscribers.</li>
-          <li><strong>Adopt Proven Title Formulas:</strong> Re-package your topics using curiosity gap formulas like <em>&quot;Most People Cook [X] Wrong! Try This Trick Instead&quot;</em> or <em>&quot;What No One Tells You About [Subject]&quot;</em>.</li>
-          <li><strong>Build an Email Funnel on Day 1:</strong> Collect subscriber emails from your YouTube bio and link directly to a high-converting Gumroad or Stripe checkout.</li>
-        </ol>
-      </div>
-      )}
-
-      {/* Author & CTA Box */}
-      <div className="mt-12 pt-8 border-t border-[var(--border-line)] flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="size-10 rounded-full bg-[var(--brand-accent)] text-white flex items-center justify-center font-bold text-sm">
-            YT
-          </div>
-          <div>
-            <div className="font-semibold text-sm text-[var(--text-ink)]">YT Niches Intelligence</div>
-            <div className="text-[12px] text-[var(--text-muted)]">Data-driven research for modern YouTube creators</div>
-          </div>
-        </div>
-
-        <Link
-          href="/"
-          className="btn-accent h-9 px-4 rounded-full text-xs font-semibold inline-flex items-center gap-1.5"
-        >
-          Explore 6,800+ Channels &rarr;
-        </Link>
-      </div>
-
-    </article>
+function Toc({ items }: { items: { id: string; text: string; level: 2 | 3 }[] }) {
+  return (
+    <ol className="mt-3 space-y-1.5 border-l border-[var(--border-line)] text-[13.5px] lg:mt-0">
+      {items.map((t) => (
+        <li key={t.id} className={t.level === 3 ? 'pl-6' : 'pl-3'}>
+          <a href={`#${t.id}`} className="block text-[var(--text-muted)] hover:text-[var(--brand-mark)]">{t.text}</a>
+        </li>
+      ))}
+    </ol>
   );
 }

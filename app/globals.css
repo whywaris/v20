@@ -114,6 +114,7 @@ body {
 
 /* Markdown articles written in /admin (blog posts and the admin preview); Tailwind resets these elements. */
 .prose-post { line-height: 1.75; }
+.prose-post h2, .prose-post h3 { scroll-margin-top: 5rem; } /* table-of-contents jumps clear the sticky header */
 .prose-post > * + * { margin-top: 1em; }
 .prose-post h1 { font-size: 1.9rem; font-weight: 800; margin-top: 1.6em; color: var(--text-ink); }
 .prose-post h2 { font-size: 1.5rem; font-weight: 700; margin-top: 2em; padding-bottom: .3em; border-bottom: 1px solid var(--border-line); color: var(--text-ink); }
