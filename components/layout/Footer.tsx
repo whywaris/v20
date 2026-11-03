@@ -1,6 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { Sparkles } from 'lucide-react';
+import { NOT_AFFILIATED } from '@/lib/site';
 
 type FooterLink = { label: string; href: string };
 
@@ -24,7 +25,7 @@ const COLUMNS: { title: string; links: FooterLink[] }[] = [
       { label: 'Channel Directory', href: '/channels' },
       { label: 'Viral Outliers', href: '/outliers' },
       { label: 'Niche Explorer', href: '/niche' },
-      { label: 'Saved Research', href: '/saved' },
+      { label: 'About & Methodology', href: '/about' },
       { label: 'Free API & MCP', href: '/mcp' },
     ],
   },
@@ -87,7 +88,10 @@ export default function Footer() {
         </div>
 
         <div className="pt-8 border-t border-[var(--border-line)] flex flex-col sm:flex-row items-center justify-between text-[12px] text-[var(--text-muted)] gap-3">
-          <p>&copy; {new Date().getFullYear()} YT Niches &bull; All rights reserved.</p>
+          <div className="flex flex-col gap-1 text-center sm:text-left">
+            <p>&copy; {new Date().getFullYear()} YT Niches &bull; All rights reserved.</p>
+            <p className="text-[11.5px] text-[var(--text-muted)] opacity-80">{NOT_AFFILIATED}</p>
+          </div>
         </div>
       </div>
     </footer>

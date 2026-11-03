@@ -7,7 +7,7 @@ import { ToastProvider } from '@/components/ui/Toast';
 import Script from 'next/script';
 
 // Public publisher ID (ca-pub-XXXXXXXXXXXXXXXX…). When unset, no AdSense script is loaded at all.
-const ADSENSE_CLIENT_ID = process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID;
+const ADSENSE_CLIENT_ID = process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID || 'ca-pub-5229999645121370';
 
 const fontSans = Geist({
   subsets: ['latin'],

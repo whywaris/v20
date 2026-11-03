@@ -55,7 +55,7 @@ export default function Header() {
     { href: '/niche', label: 'Niches', icon: Layers },
     { href: '/outliers', label: 'Viral Outliers', icon: Flame },
     { href: '/blog', label: 'Blog', icon: BookOpen },
-    { href: '/saved', label: 'Saved', icon: Bookmark },
+    { href: '/about', label: 'About', icon: Sparkles },
   ];
   const mobileLinks = [...navLinks, { href: '/admin', label: 'Admin', icon: Shield }];
   const isActive = (href: string) => pathname === href || (href !== '/' && pathname.startsWith(href));

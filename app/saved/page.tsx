@@ -23,14 +23,13 @@ export default async function SavedPage() {
 
         {user ? (
           <p className="text-[14.5px] text-[var(--text-muted)] leading-relaxed mb-8 max-w-md mx-auto">
-            You&apos;re signed in as <strong className="text-[var(--text-ink)]">{user.email}</strong>. Saving channels and
-            videos is coming soon. Meanwhile, every channel page shows its free member insights.
+            You&apos;re signed in as <strong className="text-[var(--text-ink)]">{user.email}</strong>.
+            Bookmark channels and viral videos across the directory to build your personalized research swipe file.
           </p>
         ) : (
           <>
             <p className="text-[14.5px] text-[var(--text-muted)] leading-relaxed mb-8 max-w-md mx-auto">
-              Sign in with your Google account (free) to unlock member insights on every channel. Saving channels and
-              videos is coming soon.
+              Sign in with your Google account (free) to bookmark channels and unlock deep member insights.
             </p>
             <SignInButton
               label="Sign in with Google (Free)"
