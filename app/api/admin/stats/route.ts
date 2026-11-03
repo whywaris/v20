@@ -1,44 +1,29 @@
 import { NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/admin';
-import fs from 'node:fs';
-import path from 'node:path';
+import { overrideCount, pendingSubmissions, postCount, unreadMessages } from '@/lib/admin-queries';
+import { getChannels, getNiches, getOutliers } from '@/lib/data';
 
+// Live counts for the admin (the dashboard page reads the same sources server-side).
 export async function GET() {
   const denied = await requireAdmin();
   if (denied) return denied;
-  const dataDir = path.join(process.cwd(), 'data');
-  const channelsPath = path.join(dataDir, 'unified_channels.json');
-  const nichesPath = path.join(dataDir, 'unified_niches.json');
-  const outliersPath = path.join(dataDir, 'unified_outliers.json');
-
-  let channelsCount = 0;
-  let nichesCount = 0;
-  let outliersCount = 0;
-
-  try {
-    if (fs.existsSync(channelsPath)) {
-      const c = JSON.parse(fs.readFileSync(channelsPath, 'utf8'));
-      channelsCount = c.length;
-    }
-    if (fs.existsSync(nichesPath)) {
-      const n = JSON.parse(fs.readFileSync(nichesPath, 'utf8'));
-      nichesCount = n.length;
-    }
-    if (fs.existsSync(outliersPath)) {
-      const o = JSON.parse(fs.readFileSync(outliersPath, 'utf8'));
-      outliersCount = o.length;
-    }
-  } catch (e) {
-    console.error('Error reading stats:', e);
-  }
-
+  const [channels, niches, unread, pending, edits, published, drafts] = await Promise.all([
+    getChannels(),
+    getNiches(),
+    unreadMessages(),
+    pendingSubmissions(),
+    overrideCount(),
+    postCount('published'),
+    postCount('draft'),
+  ]);
   return NextResponse.json({
-    channelsCount,
-    nichesCount,
-    outliersCount,
-    blogPostsCount: 4,
-    status: 'healthy',
-    canonicalUrl: 'https://ytniches.com/',
-    siteName: 'YT Niches'
+    channelsCount: channels.length,
+    nichesCount: niches.length,
+    outliersCount: getOutliers().length,
+    unreadMessages: unread.value,
+    pendingSubmissions: pending.value,
+    overrides: edits.value,
+    publishedPosts: published.value,
+    draftPosts: drafts.value,
   });
 }

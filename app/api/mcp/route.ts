@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { handleRpc, type McpData } from '@/lib/mcp';
-import { readData } from '@/lib/sitemap';
+import { getChannels, getNiches, getOutliers } from '@/lib/data';
 
 // Public, read-only data, so any client may call it.
 const CORS = {
@@ -9,12 +9,10 @@ const CORS = {
   'Access-Control-Allow-Headers': 'Content-Type, Accept, Mcp-Protocol-Version, Mcp-Session-Id',
 };
 
-let data: McpData | null = null;
-const load = () => (data ??= {
-  channels: readData('unified_channels.json'),
-  niches: readData('unified_niches.json'),
-  outliers: readData('unified_outliers.json'),
-});
+const load = async (): Promise<McpData> => {
+  const [channels, niches] = await Promise.all([getChannels(), getNiches()]);
+  return { channels, niches, outliers: getOutliers() };
+};
 
 export async function POST(req: NextRequest) {
   let body: unknown;
@@ -23,7 +21,7 @@ export async function POST(req: NextRequest) {
   } catch {
     return NextResponse.json({ jsonrpc: '2.0', id: null, error: { code: -32700, message: 'Parse error' } }, { status: 400, headers: CORS });
   }
-  const d = load();
+  const d = await load();
   const replies = (Array.isArray(body) ? body : [body]).map((m) => handleRpc(m, d)).filter(Boolean);
   if (!replies.length) return new Response(null, { status: 202, headers: CORS });
   return NextResponse.json(Array.isArray(body) ? replies : replies[0], { headers: CORS });

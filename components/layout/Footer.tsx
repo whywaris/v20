@@ -1,7 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
 import { Sparkles } from 'lucide-react';
-import { CONTACT_EMAIL, NOT_AFFILIATED, SITE_URL } from '@/lib/site';
 
 type FooterLink = { label: string; href: string };
 
@@ -22,11 +21,11 @@ const COLUMNS: { title: string; links: FooterLink[] }[] = [
   {
     title: 'Tools & Features',
     links: [
-      { label: 'Channel Directory', href: '/' },
+      { label: 'Channel Directory', href: '/channels' },
       { label: 'Viral Outliers', href: '/outliers' },
       { label: 'Niche Explorer', href: '/niche' },
       { label: 'Saved Research', href: '/saved' },
-      { label: 'Admin', href: '/admin' },
+      { label: 'Free API & MCP', href: '/mcp' },
     ],
   },
   {
@@ -43,7 +42,7 @@ const COLUMNS: { title: string; links: FooterLink[] }[] = [
     links: [
       { label: 'About Us', href: '/about' },
       { label: 'Contact Us', href: '/contact' },
-      { label: 'Research Methodology', href: '/blog' },
+      { label: 'Blog', href: '/blog' },
     ],
   },
 ];
@@ -63,17 +62,9 @@ export default function Footer() {
                 YT <span className="text-[var(--brand-mark)]">Niches</span>
               </span>
             </Link>
-            <p className="text-[13px] text-[var(--text-muted)] leading-relaxed mb-3">
+            <p className="text-[13px] text-[var(--text-muted)] leading-relaxed">
               A research directory of low-competition YouTube channels, niche RPM estimates and outlier videos, built to
               help creators pick a niche with data instead of guesswork.
-            </p>
-            <p className="text-[12.5px] text-[var(--text-muted)] mb-3">
-              <a href={SITE_URL} className="text-[var(--brand-mark)] hover:underline">ytniches.com</a>
-              {' · '}
-              <a href={`mailto:${CONTACT_EMAIL}`} className="hover:text-[var(--brand-mark)] hover:underline">{CONTACT_EMAIL}</a>
-            </p>
-            <p className="text-[12px] text-[var(--text-muted)] leading-relaxed border-l-2 border-[var(--border-line-strong)] pl-3">
-              {NOT_AFFILIATED}
             </p>
           </div>
 
@@ -96,8 +87,7 @@ export default function Footer() {
         </div>
 
         <div className="pt-8 border-t border-[var(--border-line)] flex flex-col sm:flex-row items-center justify-between text-[12px] text-[var(--text-muted)] gap-3">
-          <p>&copy; {new Date().getFullYear()} YT Niches (ytniches.com) &bull; All rights reserved.</p>
-          <p>YouTube is a trademark of Google LLC.</p>
+          <p>&copy; {new Date().getFullYear()} YT Niches &bull; All rights reserved.</p>
         </div>
       </div>
     </footer>

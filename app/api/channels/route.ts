@@ -1,27 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { toCardChannel } from '@/lib/card-channel';
-import fs from 'node:fs';
-import path from 'node:path';
-import { Channel } from '@/types';
-
-// In-memory server-side cache for high performance
-let cachedChannels: Channel[] | null = null;
-
-function loadChannels(): Channel[] {
-  if (cachedChannels) return cachedChannels;
-  const filePath = path.join(process.cwd(), 'data', 'unified_channels.json');
-  try {
-    if (fs.existsSync(filePath)) {
-      const raw = JSON.parse(fs.readFileSync(filePath, 'utf8'));
-      // Pre-map to remove heavy arrays not needed for cards/listings
-      cachedChannels = raw.map(toCardChannel);
-      return cachedChannels!;
-    }
-  } catch (err) {
-    console.error('Error loading channels in API:', err);
-  }
-  return [];
-}
+import { getChannels } from '@/lib/data';
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -34,7 +13,8 @@ export async function GET(request: NextRequest) {
   const page = Math.max(1, parseInt(searchParams.get('page') || '1', 10));
   const limit = Math.min(100, Math.max(12, parseInt(searchParams.get('limit') || '24', 10)));
 
-  const allChannels = loadChannels();
+  // ponytail: maps ~7k channels per request (a few ms); cache by overrides version if this shows up in profiles.
+  const allChannels = (await getChannels()).map(toCardChannel);
 
   // Filter channels
   const filtered = allChannels.filter((c) => {

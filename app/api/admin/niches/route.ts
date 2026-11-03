@@ -1,153 +1,72 @@
 import { NextResponse } from 'next/server';
-import { requireAdmin, saveJson } from '@/lib/admin';
-import fs from 'node:fs';
-import path from 'node:path';
-import { Niche } from '@/types';
+import { requireAdmin, requireAdminUser } from '@/lib/admin';
+import { adminView, cleanNicheEdit, newNiche } from '@/lib/admin-catalog';
+import { adminOverrides, resetOverride, saveOverride } from '@/lib/admin-store';
+import { baseNiches, getBaseNiche, nicheKey } from '@/lib/data';
 
-const dataPath = path.join(process.cwd(), 'data', 'unified_niches.json');
+const fail = (e: unknown, status = 500) => NextResponse.json({ error: (e as Error).message ?? String(e) }, { status });
 
-function readNiches(): Niche[] {
-  try {
-    if (fs.existsSync(dataPath)) {
-      return JSON.parse(fs.readFileSync(dataPath, 'utf8'));
-    }
-  } catch (e) {
-    console.error('Error reading niches:', e);
-  }
-  return [];
-}
-
-function writeNiches(niches: Niche[]) {
-  saveJson(dataPath, niches);
-}
-
-// GET: Paginated & filtered list of niches
+// GET ?search=&status=edited|hidden|new&page=&limit=
 export async function GET(request: Request) {
   const denied = await requireAdmin();
   if (denied) return denied;
-  const { searchParams } = new URL(request.url);
-  const search = (searchParams.get('search') || '').toLowerCase().trim();
-  const page = parseInt(searchParams.get('page') || '1', 10);
-  const limit = parseInt(searchParams.get('limit') || '50', 10);
+  const sp = new URL(request.url).searchParams;
+  const search = (sp.get('search') || '').toLowerCase().trim();
+  const status = sp.get('status') || '';
+  const page = Math.max(1, Number(sp.get('page')) || 1);
+  const limit = Math.min(100, Math.max(1, Number(sp.get('limit')) || 20));
 
-  const allNiches = readNiches();
-  let filtered = allNiches;
-
-  if (search) {
-    filtered = allNiches.filter(
-      (n) =>
-        n.name.toLowerCase().includes(search) ||
-        n.slug.toLowerCase().includes(search)
-    );
-  }
-
-  const total = filtered.length;
-  const start = (page - 1) * limit;
-  const items = filtered.slice(start, start + limit);
-
-  return NextResponse.json({
-    items,
-    total,
-    page,
-    totalPages: Math.ceil(total / limit)
-  });
+  const all = adminView(baseNiches(), await adminOverrides('niche'), nicheKey);
+  const filtered = all.filter(
+    (n) => (!status || n._status === status) && (!search || n.name.toLowerCase().includes(search) || n.slug.includes(search))
+  );
+  const items = filtered.slice((page - 1) * limit, page * limit);
+  return NextResponse.json({ items, total: filtered.length, page, totalPages: Math.ceil(filtered.length / limit) });
 }
 
-// POST: Add new niche
+// POST: add a niche.
 export async function POST(request: Request) {
-  const denied = await requireAdmin();
+  const { user, denied } = await requireAdminUser();
   if (denied) return denied;
   try {
-    const body = await request.json();
-    if (!body.name) {
-      return NextResponse.json({ error: 'Niche name required' }, { status: 400 });
-    }
-
-    const allNiches = readNiches();
-    const slug = body.slug || body.name.toLowerCase().trim().replace(/[^\w\s-]/g, '').replace(/[\s_-]+/g, '-');
-
-    const newNiche: Niche = {
-      name: body.name,
-      slug: slug,
-      channelCount: Number(body.channelCount) || 1,
-      avgViews: Number(body.avgViews) || 50000,
-      rpm: {
-        min: Number(body.rpmMin) || 6.0,
-        avg: Number(body.rpmAvg) || 10.5,
-        max: Number(body.rpmMax) || 18.0
-      },
-      saturation: body.saturation || 'Medium',
-      demandScore: Number(body.demandScore) || 8.5,
-      formatRecommendation: body.formatRecommendation || 'Faceless Voiceover',
-      topTitleFormulas: Array.isArray(body.topTitleFormulas) ? body.topTitleFormulas : [
-        `[N] Shocking Secrets About ${body.name} Nobody Tells You`,
-        `Why Most People Do ${body.name} Wrong (Try This Instead)`,
-        `Before You Start ${body.name}, Watch This!`,
-        `The Ultimate Guide to ${body.name} in 2026`
-      ],
-      summary: body.summary || `Comprehensive guide and revenue intelligence for the ${body.name} YouTube niche.`
-    };
-
-    allNiches.unshift(newNiche);
-    writeNiches(allNiches);
-
-    return NextResponse.json({ success: true, niche: newNiche });
-  } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    const made = newNiche(await request.json());
+    if ('error' in made) return fail(new Error(made.error), 400);
+    if (getBaseNiche(made.slug)) return fail(new Error('A niche with this name already exists'), 409);
+    await saveOverride('niche', made.slug, { data: made.data, hidden: false }, user.id);
+    return NextResponse.json({ success: true, slug: made.slug });
+  } catch (e) {
+    return fail(e);
   }
 }
 
-// PUT: Update niche
+// PUT { slug, ...fields } edits; { slug, hidden } hides or restores.
 export async function PUT(request: Request) {
-  const denied = await requireAdmin();
+  const { user, denied } = await requireAdminUser();
   if (denied) return denied;
   try {
     const body = await request.json();
-    if (!body.slug) {
-      return NextResponse.json({ error: 'Niche slug required' }, { status: 400 });
-    }
-
-    const allNiches = readNiches();
-    const index = allNiches.findIndex((n) => n.slug.toLowerCase() === body.slug.toLowerCase());
-
-    if (index === -1) {
-      return NextResponse.json({ error: 'Niche not found' }, { status: 404 });
-    }
-
-    allNiches[index] = {
-      ...allNiches[index],
-      ...body,
-      rpm: {
-        min: body.rpmMin ? Number(body.rpmMin) : allNiches[index].rpm.min,
-        avg: body.rpmAvg ? Number(body.rpmAvg) : allNiches[index].rpm.avg,
-        max: body.rpmMax ? Number(body.rpmMax) : allNiches[index].rpm.max
-      }
-    };
-
-    writeNiches(allNiches);
-    return NextResponse.json({ success: true, niche: allNiches[index] });
-  } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    const slug = typeof body.slug === 'string' ? body.slug : '';
+    if (!slug) return fail(new Error('Niche slug required'), 400);
+    const data = cleanNicheEdit(body, getBaseNiche(slug)?.rpm);
+    const hidden = typeof body.hidden === 'boolean' ? body.hidden : undefined;
+    if (!Object.keys(data).length && hidden === undefined) return fail(new Error('Nothing to change'), 400);
+    await saveOverride('niche', slug, { data, hidden }, user.id);
+    return NextResponse.json({ success: true });
+  } catch (e) {
+    return fail(e);
   }
 }
 
-// DELETE: Delete niche
+// DELETE ?slug= : drop all edits.
 export async function DELETE(request: Request) {
   const denied = await requireAdmin();
   if (denied) return denied;
+  const slug = new URL(request.url).searchParams.get('slug');
+  if (!slug) return fail(new Error('Niche slug required'), 400);
   try {
-    const { searchParams } = new URL(request.url);
-    const slug = searchParams.get('slug');
-    if (!slug) {
-      return NextResponse.json({ error: 'Niche slug required' }, { status: 400 });
-    }
-
-    const allNiches = readNiches();
-    const filtered = allNiches.filter((n) => n.slug.toLowerCase() !== slug.toLowerCase());
-
-    writeNiches(filtered);
-    return NextResponse.json({ success: true, deletedCount: allNiches.length - filtered.length });
-  } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    await resetOverride('niche', slug);
+    return NextResponse.json({ success: true });
+  } catch (e) {
+    return fail(e);
   }
 }

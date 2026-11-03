@@ -1,18 +1,23 @@
-import fs from 'node:fs';
-import path from 'node:path';
+import Link from 'next/link';
 import { Metadata } from 'next';
-import HomeClient from '@/components/home/HomeClient';
+import { ArrowRight } from 'lucide-react';
+import HeroBanner, { SearchForm } from '@/components/home/HeroBanner';
+import TopNichesBento, { type BentoNiche } from '@/components/home/TopNichesBento';
+import OutlierSpotlight, { type SpotlightVideo } from '@/components/home/OutlierSpotlight';
+import ChannelCard from '@/components/channels/ChannelCard';
 import { Channel, Niche, VideoOutlierItem } from '@/types';
 import { toCardChannel } from '@/lib/card-channel';
 import { matchChannels } from '@/lib/niche-match';
 import { outlierRatio } from '@/lib/mcp';
-import type { BentoNiche } from '@/components/home/TopNichesBento';
-import type { SpotlightVideo } from '@/components/home/OutlierSpotlight';
-import type { RpmPreset } from '@/components/home/HomeRevenueSimulator';
+import { getChannels, getNiches, getOutliers } from '@/lib/data';
+
+const TITLE = 'YT Niches - Find Most Profitable YouTube Niches';
+const DESCRIPTION =
+  'Discover the top faceless YouTube niches. Explore low-competition, trending, and highest-paying YouTube niches, plus beginner-friendly channel ideas to grow your success.';
 
 export const metadata: Metadata = {
-  title: 'YT Niches · Find Profitable YouTube Niches, AI Avatars & 18,000+ Outliers [2026]',
-  description: 'Discover high-RPM YouTube niches, 6,800+ low-competition faceless & AI avatar channels (under 250k subs), and 18,000+ viral outlier video formulas. Find proven channel ideas before you produce.',
+  title: TITLE,
+  description: DESCRIPTION,
   keywords: [
     'youtube niches',
     'profitable youtube niches 2026',
@@ -27,63 +32,21 @@ export const metadata: Metadata = {
     canonical: 'https://ytniches.com/'
   },
   openGraph: {
-    title: 'YT Niches · Find Profitable YouTube Niches & Viral Outliers [2026]',
-    description: 'Explore 6,800+ low-competition YouTube channels (under 250k subs) across 2,700+ niches with benchmark RPM ($1 - $25+), revenue analytics, and 18,000+ viral video blueprints.',
+    title: TITLE,
+    description: DESCRIPTION,
     url: 'https://ytniches.com/',
     siteName: 'YT Niches',
     type: 'website'
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'YT Niches · Find Profitable YouTube Niches & Viral Outliers',
-    description: 'Explore 6,800+ low-competition channels and 2,700+ niches with benchmark RPM, AI avatar formats, and viral outlier formulas.'
+    title: TITLE,
+    description: DESCRIPTION
   }
 };
 
-  function getInitialData() {
-    const dataDir = path.join(process.cwd(), 'data');
-const channelsPath = path.join(dataDir, 'unified_channels.json');
-const nichesPath = path.join(dataDir, 'unified_niches.json');
-const videosPath = path.join(dataDir, 'unified_outliers.json');
-
-let channels: Channel[] = [];
-let niches: Niche[] = [];
-let outliers: VideoOutlierItem[] = [];
-let nichesCount = 2706;
-let videosCount = 18086;
-
-try {
-  if (fs.existsSync(channelsPath)) {
-    channels = JSON.parse(fs.readFileSync(channelsPath, 'utf8'));
-  }
-  if (fs.existsSync(nichesPath)) {
-    niches = JSON.parse(fs.readFileSync(nichesPath, 'utf8'));
-    nichesCount = niches.length;
-  }
-  if (fs.existsSync(videosPath)) {
-    outliers = JSON.parse(fs.readFileSync(videosPath, 'utf8'));
-    videosCount = outliers.length;
-  }
-} catch (err) {
-  console.error('Error reading JSON data files:', err);
-}
-
-  const totalChannelsCount = channels.length || 6866;
-  const initialChannels: Channel[] = channels.slice(0, 12).map(toCardChannel);
-
-  return {
-    channels: initialChannels,
-    totalChannelsCount,
-    totalNichesCount: nichesCount,
-    totalVideosCount: videosCount,
-    bento: bentoNiches(channels, niches),
-    spotlight: spotlightOutliers(channels, outliers),
-    presets: simulatorPresets(niches)
-  };
-}
-
-// Real niches from the data, biggest RPM first in the grid. There is no "AI documentaries" niche, so Documentary stands in.
-const BENTO_SLUGS = ['finance', 'documentary', 'true-crime', 'tech', 'science', 'history'];
+// Picked from the data for a spread of RPM and competition (each has 20+ matched channels).
+const BENTO_SLUGS = ['finance', 'business', 'software', 'repair', 'true-crime', 'war-history'];
 
 function bentoNiches(channels: Channel[], niches: Niche[]): BentoNiche[] {
   return BENTO_SLUGS.flatMap((slug) => {
@@ -95,12 +58,17 @@ function bentoNiches(channels: Channel[], niches: Niche[]): BentoNiche[] {
       name: n.name,
       slug: n.slug,
       rpmMin: n.rpm?.min ?? 0,
+      rpmAvg: n.rpm?.avg ?? 0,
       rpmMax: n.rpm?.max ?? 0,
+      saturation: n.saturation,
       channelCount: matched.length,
-      avatars: matched.filter((c) => c.thumbnail).slice(0, 3).map((c) => ({ title: c.title, thumbnail: c.thumbnail! })),
+      avatars: matched.slice(0, 3).map((c) => ({ title: c.title, thumbnail: c.thumbnail ?? null })),
     }];
   });
 }
+
+// Compilation / re-upload channels make weak examples of a breakout, so they're left out of the showcase.
+const NOT_SHOWCASE = /viral videos|compilation|official/i;
 
 function spotlightOutliers(channels: Channel[], outliers: VideoOutlierItem[]): SpotlightVideo[] {
   const byId = new Map(channels.map((c) => [c.id, c]));
@@ -109,7 +77,7 @@ function spotlightOutliers(channels: Channel[], outliers: VideoOutlierItem[]): S
     .flatMap((o) => {
       const c = o.channelId ? byId.get(o.channelId) : undefined;
       const x = outlierRatio(o, c);
-      return c && o.thumbnail && x != null && x >= 5 && x <= 10 ? [{ o, c, x }] : [];
+      return c && o.thumbnail && !NOT_SHOWCASE.test(c.title) && x != null && x >= 5 && x <= 10 ? [{ o, c, x }] : [];
     })
     .sort((a, b) => b.o.views - a.o.views)
     .filter(({ c }) => !seen.has(c.id) && Boolean(seen.add(c.id)))
@@ -128,22 +96,13 @@ function spotlightOutliers(channels: Channel[], outliers: VideoOutlierItem[]): S
     }));
 }
 
-// Revenue simulator presets use each niche's benchmark average RPM, so they match the bento and niche pages.
-const SIMULATOR_SLUGS = ['finance', 'tech', 'true-crime', 'history', 'gaming'];
-
-function simulatorPresets(niches: Niche[]): RpmPreset[] {
-  return SIMULATOR_SLUGS.flatMap((slug) => {
-    const n = niches.find((x) => x.slug === slug);
-    return n?.rpm?.avg ? [{ name: n.name, category: n.name, rpm: n.rpm.avg }] : [];
-  });
-}
-
-export default function HomePage() {
-  const { channels, totalChannelsCount, totalNichesCount, totalVideosCount, bento, spotlight, presets } = getInitialData();
+export default async function HomePage() {
+  const [channels, niches] = await Promise.all([getChannels(), getNiches()]);
+  const outliers = getOutliers();
 
   return (
     <>
-      {/* 1. Schema.org WebSite with SearchAction (Google Sitelinks Search Box) */}
+      {/* Schema.org WebSite with SearchAction (Google Sitelinks Search Box) */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
@@ -158,7 +117,7 @@ export default function HomePage() {
               '@type': 'SearchAction',
               target: {
                 '@type': 'EntryPoint',
-                urlTemplate: 'https://ytniches.com/?q={search_term_string}'
+                urlTemplate: 'https://ytniches.com/channels?q={search_term_string}'
               },
               'query-input': 'required name=search_term_string'
             }
@@ -166,30 +125,56 @@ export default function HomePage() {
         }}
       />
 
-      {/* 2. Schema.org CollectionPage Structured Data for Googlebot */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            '@context': 'https://schema.org',
-            '@type': 'CollectionPage',
-            name: 'YouTube Channels & Viral Niches Library',
-            description: 'Directory of YouTube channels, estimated revenue, RPM, and video swipe files.',
-            url: 'https://ytniches.com/',
-            numberOfItems: totalChannelsCount
-          })
-        }}
-      />
+      <div className="mx-auto max-w-7xl px-4 sm:px-6">
+        <HeroBanner
+          totalChannelsCount={channels.length}
+          totalNichesCount={niches.length}
+          totalVideosCount={outliers.length}
+        />
 
-      <HomeClient
-        initialChannels={channels}
-        totalChannelsCount={totalChannelsCount}
-        totalNichesCount={totalNichesCount}
-        totalVideosCount={totalVideosCount}
-        bento={bento}
-        spotlight={spotlight}
-        presets={presets}
-      />
+        <TopNichesBento niches={bentoNiches(channels, niches)} totalNichesCount={niches.length} />
+
+        <OutlierSpotlight videos={spotlightOutliers(channels, outliers)} />
+
+        <section className="py-12" aria-labelledby="channels-title">
+          <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <h2 id="channels-title" className="text-2xl font-extrabold tracking-tight text-[var(--text-ink)] sm:text-3xl">
+                Small channels worth studying
+              </h2>
+              <p className="mt-1 text-[15px] text-[var(--text-muted)]">Every channel in the directory is under 250k subscribers.</p>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
+            {channels.slice(0, 6).map((c) => (
+              <ChannelCard key={c.id} channel={toCardChannel(c)} />
+            ))}
+          </div>
+          <div className="mt-8 text-center">
+            <Link href="/channels" className="btn-accent inline-flex h-12 items-center gap-2 rounded-full px-7 text-[15px]">
+              Browse all {channels.length.toLocaleString()} channels <ArrowRight className="size-4" />
+            </Link>
+          </div>
+        </section>
+
+        <section className="my-12 rounded-3xl border border-[var(--border-line)] bg-[var(--bg-surface)] px-5 py-12 text-center sm:px-10 sm:py-16">
+          <h2 className="text-3xl font-extrabold tracking-tight text-[var(--text-ink)] sm:text-4xl">Start with a niche</h2>
+          <p className="mx-auto mt-3 max-w-xl text-[16px] text-[var(--text-muted)]">
+            Search any topic to see the small channels already earning from it.
+          </p>
+          <div className="mx-auto mt-8 max-w-xl">
+            <SearchForm size="md" />
+          </div>
+          <div className="mt-6 flex flex-wrap justify-center gap-3 text-[14px] font-semibold">
+            <Link href="/channels" className="rounded-full border border-[var(--border-line-strong)] px-5 py-2.5 text-[var(--text-ink)] hover:border-[var(--brand-accent)]">
+              Browse channels
+            </Link>
+            <Link href="/niche" className="rounded-full border border-[var(--border-line-strong)] px-5 py-2.5 text-[var(--text-ink)] hover:border-[var(--brand-accent)]">
+              Explore niches
+            </Link>
+          </div>
+        </section>
+      </div>
     </>
   );
 }

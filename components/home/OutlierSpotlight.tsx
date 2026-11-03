@@ -19,22 +19,22 @@ const compact = (n: number) => new Intl.NumberFormat('en', { notation: 'compact'
 export default function OutlierSpotlight({ videos }: { videos: SpotlightVideo[] }) {
   if (!videos.length) return null;
   return (
-    <section className="mb-14" aria-labelledby="spotlight-title">
-      <div className="mb-5 flex items-end justify-between gap-4">
+    <section className="py-12" aria-labelledby="spotlight-title">
+      <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
         <div>
           <h2 id="spotlight-title" className="text-2xl font-extrabold tracking-tight text-[var(--text-ink)] sm:text-3xl">
-            Viral Outlier Spotlight
+            Videos that broke out
           </h2>
-          <p className="mt-1 text-[14px] text-[var(--text-muted)]">Videos that pulled 5–10x their channel&apos;s average views.</p>
+          <p className="mt-1 text-[15px] text-[var(--text-muted)]">Small channels whose video pulled 5–10x their usual views.</p>
         </div>
-        <Link href="/outliers" className="hidden shrink-0 text-[13px] font-semibold text-[var(--brand-mark)] hover:underline sm:block">
-          All outliers →
+        <Link href="/outliers" className="text-[14px] font-semibold text-[var(--brand-mark)] hover:underline">
+          See all outliers →
         </Link>
       </div>
 
       <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
         {videos.map((v) => (
-          <article key={v.videoUrl} className="glass-card group flex flex-col overflow-hidden rounded-2xl">
+          <article key={v.videoUrl} className="group flex flex-col overflow-hidden rounded-2xl border border-[var(--border-line)] bg-[var(--bg-surface)] transition-all hover:-translate-y-1 hover:shadow-lg hover:shadow-black/5">
             <a href={v.videoUrl} target="_blank" rel="noopener noreferrer" className="relative block aspect-video overflow-hidden bg-[var(--bg-surface-2)]">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={v.thumbnail} alt={v.title} loading="lazy" referrerPolicy="no-referrer" className="size-full object-cover transition-transform duration-300 group-hover:scale-105" />

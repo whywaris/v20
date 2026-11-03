@@ -1,9 +1,8 @@
-import fs from 'node:fs';
-import path from 'node:path';
 import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
 import Link from 'next/link';
 import { Channel } from '@/types';
+import { getChannels } from '@/lib/data';
 import { formatNumber, formatCurrency } from '@/lib/utils';
 import {
   Sparkles,
@@ -24,35 +23,20 @@ interface Props {
   params: Promise<{ handle: string }>;
 }
 
-function getChannel(slug: string): Channel | null {
-  const filePath = path.join(process.cwd(), 'data', 'unified_channels.json');
-  try {
-    if (fs.existsSync(filePath)) {
-      const channels: Channel[] = JSON.parse(fs.readFileSync(filePath, 'utf8'));
-      const decoded = decodeURIComponent(slug).toLowerCase().trim();
-      const cleanSlug = decoded.replace(/^@/, '');
-
-      const found = channels.find((c) => {
-        const cId = (c.id || '').toLowerCase().trim();
-        const cHandle = (c.handle || '').toLowerCase().trim().replace(/^@/, '');
-        return (
-          cId === cleanSlug ||
-          cHandle === cleanSlug ||
-          cId === decoded ||
-          cHandle === decoded
-        );
-      });
-      return found || null;
-    }
-  } catch (e) {
-    console.error('Error reading channel:', e);
-  }
-  return null;
+async function getChannel(slug: string): Promise<Channel | null> {
+  const decoded = decodeURIComponent(slug).toLowerCase().trim();
+  const cleanSlug = decoded.replace(/^@/, '');
+  const found = (await getChannels()).find((c) => {
+    const cId = (c.id || '').toLowerCase().trim();
+    const cHandle = (c.handle || '').toLowerCase().trim().replace(/^@/, '');
+    return cId === cleanSlug || cHandle === cleanSlug || cId === decoded || cHandle === decoded;
+  });
+  return found || null;
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { handle } = await params;
-  const channel = getChannel(handle);
+  const channel = await getChannel(handle);
   if (!channel) return { title: 'Channel Not Found · YT Niches' };
 
   const rpmAvg = channel.estimatedRpm?.avg || 7.50;
@@ -91,7 +75,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function ChannelDetailPage({ params }: Props) {
   const { handle } = await params;
-  const channel = getChannel(handle);
+  const channel = await getChannel(handle);
 
   if (!channel) {
     notFound();

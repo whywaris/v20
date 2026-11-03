@@ -47,8 +47,9 @@ export default function PrivacyPolicyPage() {
             for security and to keep the site running.
           </li>
           <li>
-            <strong>Messages you send us.</strong> If you email us or use the contact form (which opens your own email
-            app), we receive your name, email address and message.
+            <strong>Messages you send us.</strong> If you email us, use the contact form or suggest a channel, we receive
+            your name, email address and message (or the channel link). Form messages are stored in our database (Supabase)
+            so we can reply, and are deleted on request.
           </li>
           <li>
             <strong>Browser storage.</strong> Your theme choice (dark/light) is stored in your own browser and never sent

@@ -1,9 +1,7 @@
-import fs from 'node:fs';
-import path from 'node:path';
 import Link from 'next/link';
 import { Metadata } from 'next';
 import { Layers, ArrowRight, DollarSign, Users, Eye } from 'lucide-react';
-import { Niche } from '@/types';
+import { getNiches } from '@/lib/data';
 import { formatNumber } from '@/lib/utils';
 
 export const metadata: Metadata = {
@@ -35,20 +33,8 @@ export const metadata: Metadata = {
   }
 };
 
-function getNiches(): Niche[] {
-  const filePath = path.join(process.cwd(), 'data', 'unified_niches.json');
-  try {
-    if (fs.existsSync(filePath)) {
-      return JSON.parse(fs.readFileSync(filePath, 'utf8'));
-    }
-  } catch (err) {
-    console.error('Error reading niches:', err);
-  }
-  return [];
-}
-
-export default function NichesIndexPage() {
-  const niches = getNiches();
+export default async function NichesIndexPage() {
+  const niches = await getNiches();
   const countFormatted = (niches.length || 2706).toLocaleString();
 
   return (

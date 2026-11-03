@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Plus_Jakarta_Sans } from 'next/font/google';
+import { Geist } from 'next/font/google';
 import './globals.css';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
@@ -9,7 +9,7 @@ import Script from 'next/script';
 // Public publisher ID (ca-pub-XXXXXXXXXXXXXXXX…). When unset, no AdSense script is loaded at all.
 const ADSENSE_CLIENT_ID = process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID;
 
-const fontSans = Plus_Jakarta_Sans({
+const fontSans = Geist({
   subsets: ['latin'],
   variable: '--font-sans',
   display: 'swap',

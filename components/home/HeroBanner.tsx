@@ -1,141 +1,92 @@
-'use client';
+import Link from 'next/link';
+import { Search } from 'lucide-react';
 
-import { useEffect, useRef } from 'react';
-import { Search, X } from 'lucide-react';
+// Popular searches land on the full directory with that filter applied.
+const POPULAR = [
+  { label: 'Finance', href: '/channels?category=Finance' },
+  { label: 'AI Avatar', href: '/channels?format=avatar' },
+  { label: 'Faceless', href: '/channels?format=faceless' },
+  { label: 'True Crime', href: '/channels?category=Crime' },
+  { label: 'History', href: '/channels?category=History' },
+  { label: 'Science', href: '/channels?category=Science' },
+];
 
-export interface HeroPill {
-  label: string;
-  value: string;
+/** Native GET form to /channels: works without JavaScript and is reused in the closing band. */
+export function SearchForm({ size = 'lg' }: { size?: 'lg' | 'md' }) {
+  const lg = size === 'lg';
+  return (
+    <form
+      action="/channels"
+      method="get"
+      role="search"
+      className={`flex w-full items-center gap-2 border-2 border-[var(--border-line-strong)] bg-[var(--bg-surface)] focus-within:border-[var(--brand-mark)] focus-within:ring-4 focus-within:ring-[var(--brand-accent)]/15 ${
+        lg ? 'rounded-2xl p-2 shadow-2xl shadow-[var(--brand-accent)]/10' : 'rounded-2xl p-1.5 shadow-lg shadow-black/5'
+      }`}
+    >
+      <Search className={`ml-3 shrink-0 text-[var(--text-muted)] ${lg ? 'size-6' : 'size-5'}`} />
+      <input
+        type="search"
+        name="q"
+        required
+        placeholder="Search a niche, topic or channel…"
+        aria-label="Search channels"
+        className={`min-w-0 flex-1 bg-transparent text-[var(--text-ink)] placeholder:text-[var(--text-muted)] focus:outline-none ${lg ? 'h-14 text-[17px] sm:text-lg' : 'h-11 text-[15px]'}`}
+      />
+      <button type="submit" className={`btn-accent shrink-0 rounded-xl ${lg ? 'h-14 px-5 text-[16px] sm:px-8' : 'h-11 px-5 text-[14px]'}`}>
+        Search
+      </button>
+    </form>
+  );
 }
-
-interface HeroBannerProps {
-  search: string;
-  onSearch: (q: string) => void;
-  pills: HeroPill[];
-  activePill: (value: string) => boolean;
-  onPill: (value: string) => void;
-  totalChannelsCount: number;
-  totalNichesCount: number;
-  totalVideosCount: number;
-}
-
-export const scrollToDirectory = () => document.getElementById('directory')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
 export default function HeroBanner({
-  search,
-  onSearch,
-  pills,
-  activePill,
-  onPill,
   totalChannelsCount,
   totalNichesCount,
   totalVideosCount,
-}: HeroBannerProps) {
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  // "/" focuses search, unless the user is already typing somewhere.
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      const t = e.target as HTMLElement;
-      if (e.key !== '/' || t.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(t.tagName)) return;
-      e.preventDefault();
-      inputRef.current?.focus();
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, []);
-
-  const kpis = [
-    { value: `${totalChannelsCount.toLocaleString()}+`, label: 'Creator Channels (≤ 250k Subs)' },
-    { value: `${totalNichesCount.toLocaleString()}+`, label: 'Profitable Niches' },
-    { value: `${totalVideosCount.toLocaleString()}+`, label: 'Viral Outliers' },
-    { value: '100%', label: 'Free Access (No Paywalls)' },
-  ];
-
+}: {
+  totalChannelsCount: number;
+  totalNichesCount: number;
+  totalVideosCount: number;
+}) {
   return (
-    <section className="relative mb-12 overflow-hidden rounded-3xl border border-[var(--border-line)] bg-[var(--bg-surface)] px-5 py-12 sm:px-10 sm:py-16">
+    <section className="relative mx-auto max-w-3xl py-14 text-center sm:py-24">
       {/* Soft brand glow behind the headline */}
-      <div aria-hidden className="pointer-events-none absolute -top-32 left-1/2 h-72 w-[42rem] -translate-x-1/2 rounded-full bg-[var(--brand-accent)]/15 blur-3xl" />
+      <div aria-hidden className="pointer-events-none absolute inset-x-0 -top-10 mx-auto h-64 max-w-xl rounded-full bg-[var(--brand-accent)]/15 blur-3xl" />
 
-      <div className="relative mx-auto max-w-3xl text-center">
-        <span className="mb-6 inline-flex items-center gap-2 rounded-full border border-[var(--border-line)] bg-[var(--bg-surface-2)] px-3 py-1 text-[12px] font-semibold text-[var(--text-ink)]">
-          <span className="relative flex size-2">
-            <span className="absolute inline-flex size-full animate-ping rounded-full bg-emerald-500 opacity-60" />
-            <span className="relative inline-flex size-2 rounded-full bg-emerald-500" />
-          </span>
-          🔥 2026 YouTube Arbitrage Database
-        </span>
+      <span className="relative inline-flex items-center gap-2 rounded-full border border-[var(--border-line)] bg-[var(--bg-surface)] px-3 py-1 text-[12px] font-semibold text-[var(--text-muted)]">
+        <span className="size-1.5 rounded-full bg-emerald-500" />
+        Updated for 2026 · 100% free
+      </span>
 
-        <h1 className="mb-4 text-[2rem] font-extrabold leading-[1.08] tracking-tight text-[var(--text-ink)] sm:text-5xl md:text-[3.4rem]">
-          Find High-RPM YouTube Niches Before They Get Crowded{' '}
-          <span className="bg-gradient-to-r from-[var(--brand-accent)] to-amber-400 bg-clip-text text-transparent">(Under 250k Subs)</span>
-        </h1>
-        <p className="mx-auto mb-8 max-w-2xl text-[15.5px] leading-relaxed text-[var(--text-muted)]">
-          {totalChannelsCount.toLocaleString()} creator-friendly channels, all capped at 250k subscribers, across{' '}
-          {totalNichesCount.toLocaleString()} niches, plus {totalVideosCount.toLocaleString()} viral outlier videos to learn from.
-        </p>
+      <h1 className="relative mt-6 text-[2.5rem] font-bold leading-[1.05] tracking-tight text-[var(--text-ink)] sm:text-6xl lg:text-7xl">
+        Find YouTube niches that pay well <span className="text-[var(--brand-accent)]">and aren&apos;t crowded yet</span>
+      </h1>
+      <p className="relative mx-auto mt-6 max-w-2xl text-[17px] leading-relaxed text-[var(--text-muted)] sm:text-lg">
+        Study {totalChannelsCount.toLocaleString()} small channels (all under 250k subscribers) that already earn, see which videos broke
+        out, and pick your niche with real numbers.
+      </p>
 
-        <form
-          role="search"
-          onSubmit={(e) => {
-            e.preventDefault();
-            scrollToDirectory();
-          }}
-          className="glass mx-auto flex max-w-2xl items-center gap-2 rounded-2xl border-[var(--border-line-strong)] p-1.5 shadow-xl shadow-black/5 focus-within:border-[var(--brand-mark)]"
-        >
-          <Search className="ml-3 size-5 shrink-0 text-[var(--text-muted)]" />
-          <input
-            ref={inputRef}
-            type="text"
-            value={search}
-            onChange={(e) => onSearch(e.target.value)}
-            placeholder="Search channels, niches or topics…"
-            aria-label="Search channels"
-            className="h-11 min-w-0 flex-1 bg-transparent text-[15px] text-[var(--text-ink)] placeholder:text-[var(--text-muted)] focus:outline-none"
-          />
-          {search ? (
-            <button type="button" onClick={() => onSearch('')} aria-label="Clear search" className="flex size-9 shrink-0 items-center justify-center rounded-lg text-[var(--text-muted)] hover:bg-[var(--bg-surface-2)] hover:text-[var(--text-ink)]">
-              <X className="size-4" />
-            </button>
-          ) : (
-            <kbd className="hidden shrink-0 rounded-md border border-[var(--border-line)] px-1.5 py-0.5 font-mono text-[11px] text-[var(--text-muted)] sm:block" title="Press / to search">
-              /
-            </kbd>
-          )}
-          <button type="submit" className="btn-accent h-11 shrink-0 rounded-xl px-5 text-[14px]">
-            Search
-          </button>
-        </form>
-
-        <div className="mt-4 flex flex-wrap justify-center gap-2">
-          {pills.map((p) => (
-            <button
-              key={p.value}
-              type="button"
-              onClick={() => {
-                onPill(p.value);
-                scrollToDirectory();
-              }}
-              className={`min-h-9 rounded-full border px-3.5 text-[12.5px] font-semibold transition-colors ${
-                activePill(p.value)
-                  ? 'border-[var(--brand-accent)] bg-[var(--brand-accent)] text-white'
-                  : 'border-[var(--border-line)] bg-[var(--bg-surface-2)] text-[var(--text-muted)] hover:border-[var(--brand-accent)]/50 hover:text-[var(--text-ink)]'
-              }`}
+      <div className="relative mx-auto mt-10 max-w-2xl">
+        <SearchForm />
+        <div className="mt-5 flex flex-wrap items-center justify-center gap-2 text-[13px]">
+          <span className="text-[var(--text-muted)]">Popular:</span>
+          {POPULAR.map((p) => (
+            <Link
+              key={p.href}
+              href={p.href}
+              className="rounded-full border border-[var(--border-line)] bg-[var(--bg-surface)] px-3 py-1.5 font-medium text-[var(--text-ink)] transition-colors hover:border-[var(--brand-accent)] hover:text-[var(--brand-mark)]"
             >
               {p.label}
-            </button>
+            </Link>
           ))}
         </div>
       </div>
 
-      <div className="relative mx-auto mt-10 grid max-w-4xl grid-cols-2 gap-4 border-t border-[var(--border-line)] pt-8 md:grid-cols-4">
-        {kpis.map((k) => (
-          <div key={k.label} className="text-center">
-            <div className="num-mono text-2xl font-bold text-[var(--text-ink)] sm:text-3xl">{k.value}</div>
-            <div className="mt-1 text-[12px] font-medium text-[var(--text-muted)]">{k.label}</div>
-          </div>
-        ))}
-      </div>
+      <p className="relative mt-10 text-[13px] text-[var(--text-muted)]">
+        <strong className="num-mono text-[var(--text-ink)]">{totalChannelsCount.toLocaleString()}</strong> channels ·{' '}
+        <strong className="num-mono text-[var(--text-ink)]">{totalNichesCount.toLocaleString()}</strong> niches ·{' '}
+        <strong className="num-mono text-[var(--text-ink)]">{totalVideosCount.toLocaleString()}</strong> outlier videos
+      </p>
     </section>
   );
 }

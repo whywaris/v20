@@ -6,6 +6,7 @@ export const revalidate = 86400;
 // Indexable top-level pages only. Not listed: /swipe-file (redirects), /saved and /admin (private).
 const PAGES: Omit<SitemapEntry, 'lastmod'>[] = [
   { path: '/', changefreq: 'daily', priority: 1.0 },
+  { path: '/channels', changefreq: 'daily', priority: 0.9 },
   { path: '/niche', changefreq: 'daily', priority: 0.9 },
   { path: '/outliers', changefreq: 'daily', priority: 0.9 },
   { path: '/blog', changefreq: 'weekly', priority: 0.8 },

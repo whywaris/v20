@@ -1,6 +1,4 @@
-import fs from 'node:fs';
 import { cache } from 'react';
-import path from 'node:path';
 import { notFound, permanentRedirect } from 'next/navigation';
 import { Metadata } from 'next';
 import Link from 'next/link';
@@ -10,6 +8,7 @@ import NicheRevenueCalculator from '@/components/niche/NicheRevenueCalculator';
 import AdSlot from '@/components/ads/AdSlot';
 import NicheFaqAccordion from '@/components/niche/NicheFaqAccordion';
 import { formatNumber } from '@/lib/utils';
+import { getChannels, getNiches, getOutliers } from '@/lib/data';
 import { matchChannels, matchOutliers, relatedNiches as findRelatedNiches } from '@/lib/niche-match';
 import NichePlaybook from '@/components/niche/NichePlaybook';
 import { Sparkles, Lightbulb, Play } from 'lucide-react';
@@ -18,18 +17,13 @@ interface Props {
   params: Promise<{ slug: string }>;
 }
 
-function readJson<T>(file: string): T[] {
-  const p = path.join(process.cwd(), 'data', file);
-  return fs.existsSync(p) ? (JSON.parse(fs.readFileSync(p, 'utf8')) as T[]) : [];
-}
-
 // Loads a niche and everything that belongs to it. `exact` is false when the URL only loosely matched a niche,
 // so the page can redirect to the real slug instead of serving a duplicate page.
 // cache(): generateMetadata and the page share one load per request instead of reading the JSON twice.
-const getNicheData = cache(function getNicheData(slug: string) {
+const getNicheData = cache(async function getNicheData(slug: string) {
   const empty = { niche: null as Niche | null, exact: false, matchedChannels: [] as Channel[], keywordMatches: 0, topChannels: [] as Channel[], nicheOutliers: [] as VideoOutlierItem[], relatedNiches: [] as Niche[] };
   try {
-    const niches = readJson<Niche>('unified_niches.json');
+    const niches = await getNiches();
     const cleanSlug = decodeURIComponent(slug).toLowerCase().trim().replace(/^\/+|\/+$/g, '');
 
     // 1. The exact slug always wins (otherwise e.g. "geo-politics" would resolve to "geopolitics"), then name / dashless slug.
@@ -48,14 +42,14 @@ const getNicheData = cache(function getNicheData(slug: string) {
     if (!niche) return empty;
     if (!exact) return { ...empty, niche };
 
-    const matched = matchChannels(niche, readJson<Channel>('unified_channels.json'));
+    const matched = matchChannels(niche, await getChannels());
     return {
       niche,
       exact,
       matchedChannels: matched.all,
       keywordMatches: matched.related.length,
       topChannels: matched.all.slice(0, 12),
-      nicheOutliers: matchOutliers(niche, readJson<VideoOutlierItem>('unified_outliers.json'), matched.all).slice(0, 6),
+      nicheOutliers: matchOutliers(niche, getOutliers(), matched.all).slice(0, 6),
       relatedNiches: findRelatedNiches(niche, niches),
     };
   } catch (e) {
@@ -66,7 +60,7 @@ const getNicheData = cache(function getNicheData(slug: string) {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const { niche, matchedChannels } = getNicheData(slug);
+  const { niche, matchedChannels } = await getNicheData(slug);
   if (!niche) return { title: 'Niche Not Found · YT Niches' };
 
   const rpmFormatted = niche.rpm.avg.toFixed(2);
@@ -107,7 +101,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function NicheDetailPage({ params }: Props) {
   const { slug } = await params;
-  const { niche, exact, matchedChannels, keywordMatches, topChannels, nicheOutliers, relatedNiches } = getNicheData(slug);
+  const { niche, exact, matchedChannels, keywordMatches, topChannels, nicheOutliers, relatedNiches } = await getNicheData(slug);
 
   if (!niche) {
     notFound();
