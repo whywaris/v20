@@ -2,8 +2,13 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { Metadata } from 'next';
 import HomeClient from '@/components/home/HomeClient';
-import { Channel } from '@/types';
+import { Channel, Niche, VideoOutlierItem } from '@/types';
 import { toCardChannel } from '@/lib/card-channel';
+import { matchChannels } from '@/lib/niche-match';
+import { outlierRatio } from '@/lib/mcp';
+import type { BentoNiche } from '@/components/home/TopNichesBento';
+import type { SpotlightVideo } from '@/components/home/OutlierSpotlight';
+import type { RpmPreset } from '@/components/home/HomeRevenueSimulator';
 
 export const metadata: Metadata = {
   title: 'YT Niches · Find Profitable YouTube Niches, AI Avatars & 18,000+ Outliers [2026]',
@@ -42,6 +47,8 @@ const nichesPath = path.join(dataDir, 'unified_niches.json');
 const videosPath = path.join(dataDir, 'unified_outliers.json');
 
 let channels: Channel[] = [];
+let niches: Niche[] = [];
+let outliers: VideoOutlierItem[] = [];
 let nichesCount = 2706;
 let videosCount = 18086;
 
@@ -50,30 +57,89 @@ try {
     channels = JSON.parse(fs.readFileSync(channelsPath, 'utf8'));
   }
   if (fs.existsSync(nichesPath)) {
-    const niches = JSON.parse(fs.readFileSync(nichesPath, 'utf8'));
+    niches = JSON.parse(fs.readFileSync(nichesPath, 'utf8'));
     nichesCount = niches.length;
   }
   if (fs.existsSync(videosPath)) {
-    const videos = JSON.parse(fs.readFileSync(videosPath, 'utf8'));
-    videosCount = videos.length;
+    outliers = JSON.parse(fs.readFileSync(videosPath, 'utf8'));
+    videosCount = outliers.length;
   }
 } catch (err) {
   console.error('Error reading JSON data files:', err);
 }
 
   const totalChannelsCount = channels.length || 6866;
-  const initialChannels: Channel[] = channels.slice(0, 36).map(toCardChannel);
+  const initialChannels: Channel[] = channels.slice(0, 12).map(toCardChannel);
 
   return {
     channels: initialChannels,
     totalChannelsCount,
     totalNichesCount: nichesCount,
-    totalVideosCount: videosCount
+    totalVideosCount: videosCount,
+    bento: bentoNiches(channels, niches),
+    spotlight: spotlightOutliers(channels, outliers),
+    presets: simulatorPresets(niches)
   };
 }
 
+// Real niches from the data, biggest RPM first in the grid. There is no "AI documentaries" niche, so Documentary stands in.
+const BENTO_SLUGS = ['finance', 'documentary', 'true-crime', 'tech', 'science', 'history'];
+
+function bentoNiches(channels: Channel[], niches: Niche[]): BentoNiche[] {
+  return BENTO_SLUGS.flatMap((slug) => {
+    const n = niches.find((x) => x.slug === slug);
+    if (!n) return [];
+    const matched = matchChannels(n, channels).all;
+    if (!matched.length) return [];
+    return [{
+      name: n.name,
+      slug: n.slug,
+      rpmMin: n.rpm?.min ?? 0,
+      rpmMax: n.rpm?.max ?? 0,
+      channelCount: matched.length,
+      avatars: matched.filter((c) => c.thumbnail).slice(0, 3).map((c) => ({ title: c.title, thumbnail: c.thumbnail! })),
+    }];
+  });
+}
+
+function spotlightOutliers(channels: Channel[], outliers: VideoOutlierItem[]): SpotlightVideo[] {
+  const byId = new Map(channels.map((c) => [c.id, c]));
+  const seen = new Set<string>();
+  return outliers
+    .flatMap((o) => {
+      const c = o.channelId ? byId.get(o.channelId) : undefined;
+      const x = outlierRatio(o, c);
+      return c && o.thumbnail && x != null && x >= 5 && x <= 10 ? [{ o, c, x }] : [];
+    })
+    .sort((a, b) => b.o.views - a.o.views)
+    .filter(({ c }) => !seen.has(c.id) && Boolean(seen.add(c.id)))
+    .slice(0, 3)
+    .map(({ o, c, x }) => ({
+      title: o.title,
+      thumbnail: o.thumbnail,
+      videoUrl: o.videoUrl || `https://www.youtube.com/watch?v=${o.videoId}`,
+      views: o.views,
+      channelAvgViews: c.avgViews,
+      times: Math.round(x * 10) / 10,
+      channelTitle: c.title,
+      channelSlug: c.slug || c.id,
+      channelThumbnail: c.thumbnail ?? null,
+      channelSubs: c.subscribers,
+    }));
+}
+
+// Revenue simulator presets use each niche's benchmark average RPM, so they match the bento and niche pages.
+const SIMULATOR_SLUGS = ['finance', 'tech', 'true-crime', 'history', 'gaming'];
+
+function simulatorPresets(niches: Niche[]): RpmPreset[] {
+  return SIMULATOR_SLUGS.flatMap((slug) => {
+    const n = niches.find((x) => x.slug === slug);
+    return n?.rpm?.avg ? [{ name: n.name, category: n.name, rpm: n.rpm.avg }] : [];
+  });
+}
+
 export default function HomePage() {
-  const { channels, totalChannelsCount, totalNichesCount, totalVideosCount } = getInitialData();
+  const { channels, totalChannelsCount, totalNichesCount, totalVideosCount, bento, spotlight, presets } = getInitialData();
 
   return (
     <>
@@ -120,6 +186,9 @@ export default function HomePage() {
         totalChannelsCount={totalChannelsCount}
         totalNichesCount={totalNichesCount}
         totalVideosCount={totalVideosCount}
+        bento={bento}
+        spotlight={spotlight}
+        presets={presets}
       />
     </>
   );

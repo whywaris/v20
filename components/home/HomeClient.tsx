@@ -1,30 +1,26 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import { Channel } from '@/types';
 import ChannelCard from '@/components/channels/ChannelCard';
 import ChannelTableRow from '@/components/channels/ChannelTableRow';
 import FilterSidebar from '@/components/filters/FilterSidebar';
 import AdSlot from '@/components/ads/AdSlot';
-import {
-  Sparkles,
-  Layers,
-  ArrowRight,
-  Mail,
-  LayoutGrid,
-  List,
-  Bot,
-  User,
-  DollarSign,
-  TrendingUp,
-  CheckCircle2
-} from 'lucide-react';
+import HeroBanner from '@/components/home/HeroBanner';
+import TopNichesBento, { type BentoNiche } from '@/components/home/TopNichesBento';
+import OutlierSpotlight, { type SpotlightVideo } from '@/components/home/OutlierSpotlight';
+import HomeRevenueSimulator, { type RpmPreset } from '@/components/home/HomeRevenueSimulator';
+import CreatorToolkit from '@/components/home/CreatorToolkit';
+import { ArrowRight, Mail, LayoutGrid, List } from 'lucide-react';
 
 interface HomeClientProps {
   initialChannels: Channel[];
   totalChannelsCount: number;
   totalNichesCount: number;
   totalVideosCount: number;
+  bento: BentoNiche[];
+  spotlight: SpotlightVideo[];
+  presets: RpmPreset[];
 }
 
 const CATEGORY_CHIPS = [
@@ -41,13 +37,20 @@ const CATEGORY_CHIPS = [
   { label: '🧠 Education & Tech', value: 'Education' },
 ];
 
+const HERO_PILLS = CATEGORY_CHIPS.filter((c) => ['format:avatar', 'format:faceless', 'Finance', 'Crime', 'History', 'Science'].includes(c.value));
+
+const PAGE_SIZE = 12; // must match the initial slice in app/page.tsx
+
 const AD_EVERY = 12; // one in-feed ad after every 12th channel card / table row
 
 export default function HomeClient({
   initialChannels,
   totalChannelsCount,
   totalNichesCount,
-  totalVideosCount
+  totalVideosCount,
+  bento,
+  spotlight,
+  presets
 }: HomeClientProps) {
   const [search, setSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
@@ -76,6 +79,12 @@ export default function HomeClient({
     setPage(1);
   };
 
+  const isChipActive = (val: string) =>
+    (val === '' && !selectedCategory && !formatFilter) ||
+    (val === 'format:avatar' && formatFilter === 'avatar') ||
+    (val === 'format:faceless' && formatFilter === 'faceless') ||
+    (val !== '' && val === selectedCategory);
+
   // Sync with API when filters, search, sort or page change
   React.useEffect(() => {
     const isDefault = !search && !selectedCategory && !subFilter && !formatFilter && !monetizedFilter && sort === 'subscribers';
@@ -96,7 +105,7 @@ export default function HomeClient({
           monetized: monetizedFilter,
           sort: sort,
           page: String(page),
-          limit: '36'
+          limit: String(PAGE_SIZE)
         });
         const res = await fetch(`/api/channels?${params.toString()}`);
         if (res.ok) {
@@ -158,98 +167,32 @@ export default function HomeClient({
   return (
     <div className="mx-auto max-w-7xl px-4 sm:px-6 py-8">
       
-      {/* Hero Section matching AvatarChannels.com */}
-      <section className="mb-10 border-b border-[var(--border-line)] pb-10">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-          
-          {/* Left: Titles & Metrics */}
-          <div className="lg:col-span-7">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[12px] font-semibold bg-[var(--brand-accent)]/10 text-[var(--brand-mark)] border border-[var(--brand-accent)]/20 mb-4">
-              <Sparkles className="size-3.5 fill-[var(--brand-mark)]" />
-              6,800+ Low-Competition Channels (Under 250k Subs)
-            </div>
-            
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-[var(--text-ink)] tracking-tight leading-[1.1] mb-4">
-              Find Profitable YouTube Niches &amp; Breakout Channels
-            </h1>
-            
-            <p className="text-[15.5px] text-[var(--text-muted)] leading-relaxed max-w-2xl mb-6">
-              Track 6,800+ low-competition AI Avatar and Faceless YouTube channels (under 250k subs) across 2,700+ niches. Discover verified AdSense RPM rates, revenue analytics, and viral outlier video blueprints.
-            </p>
+      <HeroBanner
+        search={search}
+        onSearch={handleFilterSearch}
+        pills={HERO_PILLS}
+        activePill={isChipActive}
+        onPill={handleChipClick}
+        totalChannelsCount={totalChannelsCount}
+        totalNichesCount={totalNichesCount}
+        totalVideosCount={totalVideosCount}
+      />
 
-            {/* Live Counter Badges */}
-            <div className="grid grid-cols-3 gap-4 pt-4 border-t border-[var(--border-line)] max-w-lg">
-              <div>
-                <div className="text-2xl font-bold num-mono text-[var(--text-ink)]">
-                  {totalChannelsCount.toLocaleString()}
-                </div>
-                <div className="text-[12px] text-[var(--text-muted)] font-medium mt-0.5">
-                  Tracked Channels
-                </div>
-              </div>
-              <div>
-                <div className="text-2xl font-bold num-mono text-[var(--text-ink)]">
-                  {totalNichesCount.toLocaleString()}
-                </div>
-                <div className="text-[12px] text-[var(--text-muted)] font-medium mt-0.5">
-                  Unique Niches
-                </div>
-              </div>
-              <div>
-                <div className="text-2xl font-bold num-mono text-emerald-500">
-                  {totalVideosCount.toLocaleString()}
-                </div>
-                <div className="text-[12px] text-[var(--text-muted)] font-medium mt-0.5">
-                  Viral Outliers
-                </div>
-              </div>
-            </div>
-          </div>
+      <TopNichesBento niches={bento} />
 
-          {/* Right: Newsletter Capture Card */}
-          <div id="newsletter" className="lg:col-span-5">
-            <div className="glass rounded-2xl p-6 border border-[var(--border-line)] relative overflow-hidden">
-              <div className="flex items-center gap-2 text-[12px] font-bold text-[var(--brand-mark)] uppercase tracking-wider mb-2">
-                <Mail className="size-3.5" />
-                Weekly Niche Intelligence
-              </div>
-              <h3 className="text-lg font-bold text-[var(--text-ink)] mb-2">
-                Get high-RPM niche opportunities first
-              </h3>
-              <p className="text-[13px] text-[var(--text-muted)] mb-4 leading-normal">
-                Every Monday: 5 fast-growing YouTube channels, verified CPM rates, and 10x outlier title templates delivered to your inbox.
-              </p>
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  alert('Thank you for subscribing to YT Niches Weekly Intelligence!');
-                }}
-                className="flex flex-col sm:flex-row gap-2"
-              >
-                <input
-                  type="email"
-                  required
-                  placeholder="creator@example.com"
-                  className="h-10 px-4 rounded-xl text-[13.5px] bg-[var(--bg-surface-2)] border border-[var(--border-line)] text-[var(--text-ink)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--brand-mark)] flex-1 shadow-inner"
-                />
-                <button type="submit" className="btn-accent h-10 px-5 rounded-xl text-[13.5px] font-semibold shrink-0">
-                  Subscribe
-                </button>
-              </form>
-            </div>
-          </div>
+      <OutlierSpotlight videos={spotlight} />
 
-        </div>
-      </section>
+      <HomeRevenueSimulator presets={presets} onPick={handleChipClick} />
+
+      <div id="directory" className="scroll-mt-20 mb-5">
+        <h2 className="text-2xl font-extrabold tracking-tight text-[var(--text-ink)] sm:text-3xl">Channel Directory</h2>
+        <p className="mt-1 text-[14px] text-[var(--text-muted)]">Filter instantly by niche, format, size and monetization.</p>
+      </div>
 
       {/* Horizontal Category Chips Bar (AvatarChannels style) */}
       <div className="mb-8 overflow-x-auto pb-2 scrollbar-none flex items-center gap-2">
         {CATEGORY_CHIPS.map((chip) => {
-          const isActive =
-            (chip.value === '' && !selectedCategory && !formatFilter) ||
-            (chip.value === 'format:avatar' && formatFilter === 'avatar') ||
-            (chip.value === 'format:faceless' && formatFilter === 'faceless') ||
-            (chip.value === selectedCategory);
+          const isActive = isChipActive(chip.value);
 
           return (
             <button
@@ -427,7 +370,7 @@ export default function HomeClient({
                     disabled={loading}
                     className="btn-accent h-9 px-6 rounded-full text-xs font-semibold disabled:opacity-50"
                   >
-                    {loading ? 'Loading More Channels...' : `Load Next 36 Channels (${(totalCount - channels.length).toLocaleString()} remaining)`}
+                    {loading ? 'Loading More Channels...' : `Load More Channels (${(totalCount - channels.length).toLocaleString()} remaining)`}
                   </button>
                 </div>
               )}
@@ -437,6 +380,41 @@ export default function HomeClient({
         </div>
 
       </div>
+
+      <CreatorToolkit />
+
+      {/* Newsletter teaser (the Header's "Weekly Report" link points here) */}
+      <section id="newsletter" className="glass mt-16 rounded-2xl border border-[var(--border-line)] p-6 sm:p-8 scroll-mt-20">
+        <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
+          <div className="max-w-xl">
+            <div className="mb-2 flex items-center gap-2 text-[12px] font-bold uppercase tracking-wider text-[var(--brand-mark)]">
+              <Mail className="size-3.5" />
+              Weekly Niche Intelligence
+            </div>
+            <h3 className="text-lg font-bold text-[var(--text-ink)]">Get high-RPM niche opportunities first</h3>
+            <p className="mt-1 text-[13px] leading-normal text-[var(--text-muted)]">
+              Every Monday: fast-growing small channels, RPM benchmarks and outlier title patterns.
+            </p>
+          </div>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              alert('Thank you for subscribing to YT Niches Weekly Intelligence!');
+            }}
+            className="flex w-full flex-col gap-2 sm:flex-row md:w-auto"
+          >
+            <input
+              type="email"
+              required
+              placeholder="creator@example.com"
+              className="h-10 min-w-0 flex-1 rounded-xl border border-[var(--border-line)] bg-[var(--bg-surface-2)] px-4 text-[13.5px] text-[var(--text-ink)] placeholder:text-[var(--text-muted)] focus:border-[var(--brand-mark)] focus:outline-none md:w-64"
+            />
+            <button type="submit" className="btn-accent h-10 shrink-0 rounded-xl px-5 text-[13.5px] font-semibold">
+              Subscribe
+            </button>
+          </form>
+        </div>
+      </section>
 
     </div>
   );

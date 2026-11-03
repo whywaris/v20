@@ -77,7 +77,7 @@ export default function Header() {
           </Link>
 
           {/* Desktop Nav */}
-          <nav className="hidden md:flex items-center gap-1 text-[13.5px] font-medium">
+          <nav className="hidden lg:flex items-center gap-1 text-[13.5px] font-medium">
             {navLinks.map((item) => {
               const Icon = item.icon;
               return (
@@ -104,14 +104,14 @@ export default function Header() {
           <button
             onClick={toggleTheme}
             aria-label="Toggle theme"
-            className="hidden md:flex size-9 items-center justify-center rounded-full text-[var(--text-muted)] hover:text-[var(--text-ink)] hover:bg-[var(--bg-surface-2)] transition-colors"
+            className="hidden lg:flex size-9 items-center justify-center rounded-full text-[var(--text-muted)] hover:text-[var(--text-ink)] hover:bg-[var(--bg-surface-2)] transition-colors"
           >
             {theme === 'dark' ? <Sun className="size-4" /> : <Moon className="size-4" />}
           </button>
 
           {/* Google account: sign in, or avatar + sign out */}
           {user ? (
-            <form action={signOutAction} method="post" className="hidden md:flex items-center gap-2">
+            <form action={signOutAction} method="post" className="hidden lg:flex items-center gap-2">
               {userAvatar ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={userAvatar} alt="" referrerPolicy="no-referrer" className="size-8 rounded-full border border-[var(--border-line)]" />
@@ -128,7 +128,7 @@ export default function Header() {
           ) : (
             <button
               onClick={signInWithGoogle}
-              className="hidden md:inline-flex items-center gap-1.5 px-3 py-1.5 text-[13px] font-medium rounded-full border border-[var(--border-line-strong)] text-[var(--text-ink)] hover:bg-[var(--bg-surface-2)] transition-colors"
+              className="hidden lg:inline-flex items-center gap-1.5 px-3 py-1.5 text-[13px] font-medium rounded-full border border-[var(--border-line-strong)] text-[var(--text-ink)] hover:bg-[var(--bg-surface-2)] transition-colors"
             >
               <LogIn className="size-3.5 text-[var(--brand-mark)]" />
               Sign In
@@ -139,7 +139,7 @@ export default function Header() {
           <a
             href="#newsletter"
             onClick={closeMenu}
-            className="btn-accent inline-flex items-center justify-center h-11 md:h-8 px-3.5 text-[12.5px] rounded-full shadow-sm"
+            className="btn-accent inline-flex items-center justify-center h-11 lg:h-8 px-3.5 text-[12.5px] rounded-full shadow-sm"
           >
             Weekly Report
           </a>
@@ -151,7 +151,7 @@ export default function Header() {
             aria-label={menuOpen ? 'Close menu' : 'Open menu'}
             aria-expanded={menuOpen}
             aria-controls="mobile-menu"
-            className="flex md:hidden size-11 items-center justify-center rounded-full text-[var(--text-ink)] hover:bg-[var(--bg-surface-2)] transition-colors"
+            className="flex lg:hidden size-11 items-center justify-center rounded-full text-[var(--text-ink)] hover:bg-[var(--bg-surface-2)] transition-colors"
           >
             {menuOpen ? <X className="size-5" /> : <Menu className="size-5" />}
           </button>
@@ -159,7 +159,7 @@ export default function Header() {
       </div>
 
       {/* Mobile drawer: tap the backdrop, a link, the X or press Escape to close */}
-      <div className="md:hidden">
+      <div className="lg:hidden">
         <div
           aria-hidden
           onClick={closeMenu}

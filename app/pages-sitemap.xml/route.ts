@@ -9,6 +9,7 @@ const PAGES: Omit<SitemapEntry, 'lastmod'>[] = [
   { path: '/niche', changefreq: 'daily', priority: 0.9 },
   { path: '/outliers', changefreq: 'daily', priority: 0.9 },
   { path: '/blog', changefreq: 'weekly', priority: 0.8 },
+  { path: '/mcp', changefreq: 'monthly', priority: 0.6 },
   { path: '/about', changefreq: 'monthly', priority: 0.6 },
   { path: '/contact', changefreq: 'monthly', priority: 0.6 },
   { path: '/privacy', changefreq: 'monthly', priority: 0.4 },
