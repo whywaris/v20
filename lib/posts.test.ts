@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { categoriesOf, fromRow, isLive, readTimeFor, relatedPosts, slugifyPost, validatePostInput } from './posts.ts';
-import { renderArticle, splitForAd } from './markdown.ts';
+import { categoriesOf, fromRow, isLive, mentionsEarnings, readTimeFor, relatedPosts, slugifyPost, validatePostInput } from './posts.ts';
+import { addRpmTableNotes, renderArticle, splitForAd } from './markdown.ts';
 
 const long = 'word '.repeat(20);
 const row = (slug: string, category: string | null, published_at: string | null, status: 'published' | 'draft' = 'published') =>
@@ -73,4 +73,20 @@ test('splitForAd puts the ad after the second section, and skips short articles'
   assert.deepEqual(splitForAd('<h2>1</h2><p>b</p><h2>2</h2>'), ['<h2>1</h2><p>b</p>', '<h2>2</h2>']);
   assert.equal(splitForAd('<h2>only one</h2><p>x</p>'), null);
   assert.equal(splitForAd('<p>no headings</p><h3>sub</h3>'), null);
+});
+
+test('excerpt falls back to the SEO description', () => {
+  const base = { slug: 's', title: 'T', body_md: 'b', cover_url: null, status: 'published' as const, published_at: null, category: null, updated_at: '2026-01-01T00:00:00Z' };
+  assert.equal(fromRow({ ...base, description: null, seo_description: 'meta text' }).excerpt, 'meta text');
+  assert.equal(fromRow({ ...base, description: 'own excerpt', seo_description: 'meta text' }).excerpt, 'own excerpt');
+});
+
+test('mentionsEarnings and RPM table notes', () => {
+  assert.equal(mentionsEarnings('A typical RPM is high'), true);
+  assert.equal(mentionsEarnings('earn $3,000 a month'), true);
+  assert.equal(mentionsEarnings('How to write better titles'), false);
+  const rpmTable = '<table><tr><th>Typical RPM</th></tr></table>';
+  const other = '<table><tr><th>Difficulty</th></tr></table>';
+  assert.match(addRpmTableNotes(rpmTable), /<\/table><p class="table-note">Estimates, not guarantees/);
+  assert.equal(addRpmTableNotes(other), other);
 });

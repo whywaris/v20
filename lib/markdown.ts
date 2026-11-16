@@ -33,8 +33,16 @@ export function renderArticle(markdown: string): { html: string; toc: TocItem[] 
       },
     },
   });
-  const html = md.parse(markdown) as string;
+  const html = addRpmTableNotes(md.parse(markdown) as string);
   return { html, toc };
+}
+
+export const RPM_TABLE_NOTE =
+  '<p class="table-note">Estimates, not guarantees. Ranges vary by country, season and audience. See our <a href="/disclaimer">Earnings Disclaimer</a>.</p>';
+
+/** Every table that mentions RPM gets the estimates note directly underneath it. */
+export function addRpmTableNotes(html: string): string {
+  return html.replace(/<table>[\s\S]*?<\/table>/g, (t) => (/\bRPM\b/i.test(t) ? t + RPM_TABLE_NOTE : t));
 }
 
 /**

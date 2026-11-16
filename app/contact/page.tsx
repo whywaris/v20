@@ -15,7 +15,7 @@ const DETAILS = [
   { icon: Mail, label: 'Email', value: <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a> },
   { icon: Clock, label: 'Response time', value: 'Within 24–48 hours on business days' },
   { icon: MessageSquare, label: 'Support hours', value: 'Monday to Friday' },
-  { icon: Globe, label: 'Location', value: 'Online business, run remotely' },
+  { icon: Globe, label: 'Location', value: 'Run from Multan, Pakistan' },
 ];
 
 export default function ContactPage() {

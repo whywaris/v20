@@ -108,6 +108,24 @@ export default function EarningsDisclaimerPage() {
           </p>
         </section>
 
+        <section>
+          <h2 className="text-xl font-bold text-[var(--text-ink)] mb-3">
+            4. Advertising
+          </h2>
+          <p className="text-[var(--text-muted)]">
+            YT Niches shows ads served by Google AdSense. Ads are chosen by Google and are clearly separated from our articles. Advertisers have no say in what we write, and ads do not influence our content or recommendations.
+          </p>
+        </section>
+
+        <section>
+          <h2 className="text-xl font-bold text-[var(--text-ink)] mb-3">
+            5. Affiliate Links
+          </h2>
+          <p className="text-[var(--text-muted)]">
+            We currently don&apos;t use affiliate links. If that changes, affected pages will say so at the top.
+          </p>
+        </section>
+
       </div>
 
     </div>

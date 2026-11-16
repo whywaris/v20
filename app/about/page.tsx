@@ -2,6 +2,7 @@ import React from 'react';
 import Link from 'next/link';
 import { Metadata } from 'next';
 import { Info } from 'lucide-react';
+import AuthorBox from '@/components/blog/AuthorBox';
 import { LegalPage, Section } from '@/components/layout/LegalPage';
 import { CONTACT_EMAIL, NOT_AFFILIATED, OPERATOR_NAME } from '@/lib/site';
 
@@ -22,6 +23,10 @@ export default function AboutPage() {
           company or agency.
         </p>
         <p>{NOT_AFFILIATED}</p>
+      </Section>
+
+      <Section title="About the author">
+        <AuthorBox heading="About the author" />
       </Section>
 
       <Section title="What we write about">

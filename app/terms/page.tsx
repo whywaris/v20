@@ -105,6 +105,15 @@ export default function TermsOfServicePage() {
           </p>
         </section>
 
+        <section>
+          <h2 className="text-xl font-bold text-[var(--text-ink)] mb-3">
+            7. Governing Law
+          </h2>
+          <p className="text-[var(--text-muted)]">
+            These Terms are governed by the laws of Pakistan. Any dispute arising from your use of YT Niches will be subject to the jurisdiction of the courts of Pakistan.
+          </p>
+        </section>
+
       </div>
 
     </div>

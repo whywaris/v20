@@ -1,13 +1,15 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
-import { ArrowRight, Calendar, Clock, ListOrdered } from 'lucide-react';
+import { Calendar, Clock, ListOrdered } from 'lucide-react';
 import AdSlot from '@/components/ads/AdSlot';
+import AuthorBox, { AuthorAvatar } from '@/components/blog/AuthorBox';
+import EarningsNote from '@/components/blog/EarningsNote';
 import PostCard, { toCard } from '@/components/blog/PostCard';
 import ReadingProgress from '@/components/blog/ReadingProgress';
 import ShareButtons from '@/components/blog/ShareButtons';
 import { renderArticle, splitForAd } from '@/lib/markdown';
-import { getPublishedPosts, relatedPosts } from '@/lib/posts';
+import { getPublishedPosts, mentionsEarnings, relatedPosts } from '@/lib/posts';
 import { OPERATOR_NAME, SITE_URL } from '@/lib/site';
 
 // Refreshed every 5 minutes; saving a post in /admin refreshes it immediately.
@@ -53,6 +55,7 @@ export default async function BlogPostPage({ params }: Props) {
   if (!found) notFound();
   const { post, related } = found;
   const { html, toc } = renderArticle(post.content);
+  const updated = new Date(post.updatedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' });
   const split = splitForAd(html);
   const prose = 'prose-post max-w-none text-[16.5px] leading-[1.8] text-[var(--text-ink)]';
   const url = `${SITE_URL}/blog/${post.slug}`;
@@ -105,14 +108,16 @@ export default async function BlogPostPage({ params }: Props) {
           {post.excerpt && <p className="mt-4 text-[18px] leading-relaxed text-[var(--text-muted)]">{post.excerpt}</p>}
           <div className="mt-6 flex flex-wrap items-center gap-x-4 gap-y-2 border-b border-[var(--border-line)] pb-6 text-[13px] text-[var(--text-muted)]">
             <span className="flex items-center gap-2">
-              <span className="flex size-7 items-center justify-center rounded-full bg-[var(--brand-accent)] text-[11px] font-bold text-white">
-                {OPERATOR_NAME.split(' ').map((w) => w[0]).join('')}
-              </span>
+              <AuthorAvatar className="size-7 text-[11px]" />
               <span className="font-semibold text-[var(--text-ink)]">{OPERATOR_NAME}</span>
             </span>
-            <span className="flex items-center gap-1.5"><Calendar className="size-3.5" /> {post.date}</span>
+            <span className="flex items-center gap-1.5"><Calendar className="size-3.5" /> Published <time dateTime={post.publishedAt ?? undefined}>{post.date}</time></span>
+            {updated !== post.date && (
+              <span className="flex items-center gap-1.5">Updated <time dateTime={post.updatedAt}>{updated}</time></span>
+            )}
             <span className="flex items-center gap-1.5"><Clock className="size-3.5" /> {post.readTime}</span>
           </div>
+          {mentionsEarnings(post.content) && <EarningsNote className="mt-6" />}
         </header>
 
         <AdSlot format="horizontal" className="mx-auto mt-6 max-w-3xl" />
@@ -146,19 +151,9 @@ export default async function BlogPostPage({ params }: Props) {
               <ShareButtons url={url} title={post.title} />
             </div>
 
-            <aside className="mt-8 flex flex-col gap-4 rounded-2xl border border-[var(--border-line)] bg-[var(--bg-surface)] p-5 sm:flex-row sm:items-center">
-              <span className="flex size-12 shrink-0 items-center justify-center rounded-full bg-[var(--brand-accent)] text-[15px] font-bold text-white">
-                {OPERATOR_NAME.split(' ').map((w) => w[0]).join('')}
-              </span>
-              <div className="flex-1">
-                <div className="text-[13px] text-[var(--text-muted)]">Written by</div>
-                <div className="font-bold text-[var(--text-ink)]">{OPERATOR_NAME}</div>
-                <p className="mt-1 text-[14px] text-[var(--text-muted)]">
-                  Founder of YT Niches. Studies how small YouTube channels find an audience and turn it into income.{' '}
-                  <Link href="/about" className="font-semibold text-[var(--brand-mark)] hover:underline">About us</Link>
-                </p>
-              </div>
-            </aside>
+            <div className="mt-8">
+              <AuthorBox />
+            </div>
           </div>
 
           {toc.length >= 3 && (
@@ -170,14 +165,6 @@ export default async function BlogPostPage({ params }: Props) {
             </aside>
           )}
         </div>
-
-        <section className="mx-auto mt-16 max-w-5xl rounded-3xl border border-[var(--border-line)] bg-[var(--bg-surface)] p-6 text-center sm:p-10">
-          <h2 className="text-2xl font-bold text-[var(--text-ink)]">More guides for growing your channel</h2>
-          <p className="mx-auto mt-2 max-w-lg text-[15px] text-[var(--text-muted)]">Niche ideas, RPM breakdowns and growth playbooks for faceless YouTube creators.</p>
-          <Link href="/" className="btn-accent mt-6 inline-flex h-11 items-center gap-2 rounded-full px-6 text-[14px]">
-            Read all articles <ArrowRight className="size-4" />
-          </Link>
-        </section>
 
         {related.length > 0 && (
           <section className="mx-auto mt-16 max-w-5xl" aria-labelledby="related-title">

@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useSyncExternalStore } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Sparkles, Sun, Moon, Hash, Home, Menu, X, Shield } from 'lucide-react';
+import { Sparkles, Sun, Moon, Hash, Home, Menu, X } from 'lucide-react';
 
 // The theme lives on <html data-theme>, set before hydration by the inline script in app/layout.tsx.
 const readTheme = () => (document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark') as 'light' | 'dark';
@@ -43,7 +43,7 @@ export default function Header({ categories }: { categories: { name: string; slu
     { href: '/', label: 'Home', icon: Home },
     ...categories.map((c) => ({ href: `/blog/category/${c.slug}`, label: c.name, icon: Hash })),
   ];
-  const mobileLinks = [...navLinks, { href: '/admin', label: 'Admin', icon: Shield }];
+  const mobileLinks = navLinks;
   const isActive = (href: string) => pathname === href || (href !== '/' && pathname.startsWith(href));
   const closeMenu = () => setMenuOpen(false);
 

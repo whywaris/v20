@@ -10,7 +10,7 @@ import { SITE_URL } from '@/lib/site';
 
 const TITLE = 'YT Niches - Find Most Profitable YouTube Niches';
 const DESCRIPTION =
-  'Discover the top faceless YouTube niches. Explore low-competition, trending, and highest-paying YouTube niches, plus beginner-friendly channel ideas to grow your success.';
+  'An independent blog about YouTube niche research, faceless channels, outlier videos and monetization, written by Waris Jamil.';
 
 export const metadata: Metadata = {
   title: TITLE,

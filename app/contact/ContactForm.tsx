@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { Send } from 'lucide-react';
 import { CONTACT_EMAIL } from '@/lib/site';
 
-const TOPICS = ['General question', 'Correct or remove a channel', 'Advertising & partnerships', 'Privacy request', 'Bug report'];
+const TOPICS = ['General question', 'Advertising & partnerships', 'Privacy request', 'Bug report'];
 const field =
   'w-full min-h-11 px-4 py-2.5 rounded-xl text-[14px] bg-[var(--bg-surface-2)] border border-[var(--border-line)] text-[var(--text-ink)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--brand-mark)]';
 

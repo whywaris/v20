@@ -45,7 +45,8 @@ export function fromRow(r: PostRow): Post {
   return {
     slug: r.slug,
     title: r.title,
-    excerpt: r.description ?? '',
+    // Cards and meta fall back to the SEO description when no excerpt was written.
+    excerpt: r.description || r.seo_description || '',
     content: r.body_md ?? '',
     category,
     categorySlug: categorySlug(category),
@@ -59,6 +60,9 @@ export function fromRow(r: PostRow): Post {
     seoDescription: r.seo_description ?? '',
   };
 }
+
+/** True when an article talks about money (RPM, income, earnings or $ amounts), so it gets the earnings note. */
+export const mentionsEarnings = (markdown: string) => /\bRPM\b|\$\s?\d|\bincome\b|\bearn(s|ed|ing|ings)?\b|per month|\/month/i.test(markdown);
 
 /** Published and its date has arrived (a future date means scheduled). */
 export const isLive = (p: Pick<Post, 'status' | 'publishedAt'>, now = Date.now()) =>
