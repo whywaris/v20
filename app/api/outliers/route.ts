@@ -12,7 +12,7 @@ function loadOutliers(): VideoOutlierItem[] {
   try {
     if (fs.existsSync(filePath)) {
       const raw = JSON.parse(fs.readFileSync(filePath, 'utf8'));
-      cachedOutliers = raw.map((v: any) => ({
+      cachedOutliers = raw.map((v: VideoOutlierItem) => ({
         id: v.id,
         videoId: v.videoId,
         title: v.title,

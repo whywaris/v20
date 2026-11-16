@@ -52,9 +52,15 @@ export default function ChannelDirectory({
   const [sort, setSort] = useState('subscribers');
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
   const [page, setPage] = useState(1);
-  const [channels, setChannels] = useState<Channel[]>(fromUrl ? [] : initialChannels);
-  const [totalCount, setTotalCount] = useState(fromUrl ? 0 : totalChannelsCount);
   const [loading, setLoading] = useState(fromUrl);
+  // Results are stored with the filters they belong to, so a stale list is never shown or appended to.
+  const [result, setResult] = useState<{ key: string; items: Channel[]; total: number } | null>(null);
+  const filterKey = JSON.stringify([search, selectedCategory, subFilter, formatFilter, monetizedFilter, sort]);
+  const isDefault = !search && !selectedCategory && !subFilter && !formatFilter && !monetizedFilter && sort === 'subscribers';
+  const base = isDefault ? { items: initialChannels, total: totalChannelsCount } : { items: [] as Channel[], total: 0 };
+  const current = result?.key === filterKey ? result : base;
+  const channels = current.items;
+  const totalCount = current.total;
 
   // Quick chip click handler
   const handleChipClick = (val: string) => {
@@ -79,12 +85,7 @@ export default function ChannelDirectory({
 
   // Sync with API when filters, search, sort or page change
   React.useEffect(() => {
-    const isDefault = !search && !selectedCategory && !subFilter && !formatFilter && !monetizedFilter && sort === 'subscribers';
-    if (isDefault && page === 1) {
-      setChannels(initialChannels);
-      setTotalCount(totalChannelsCount);
-      return;
-    }
+    if (isDefault && page === 1) return; // the server-rendered first page
 
     const timer = setTimeout(async () => {
       setLoading(true);
@@ -102,12 +103,11 @@ export default function ChannelDirectory({
         const res = await fetch(`/api/channels?${params.toString()}`);
         if (res.ok) {
           const data = await res.json();
-          if (page === 1) {
-            setChannels(data.channels || []);
-          } else {
-            setChannels((prev) => [...prev, ...(data.channels || [])]);
-          }
-          setTotalCount(data.total || 0);
+          const fresh: Channel[] = data.channels || [];
+          setResult((prev) => {
+            const start = page === 1 ? [] : prev?.key === filterKey ? prev.items : isDefault ? initialChannels : [];
+            return { key: filterKey, items: [...start, ...fresh], total: data.total || 0 };
+          });
         }
       } catch (err) {
         console.error('Error fetching channels:', err);
@@ -117,7 +117,7 @@ export default function ChannelDirectory({
     }, search ? 250 : 0);
 
     return () => clearTimeout(timer);
-  }, [search, selectedCategory, subFilter, formatFilter, monetizedFilter, sort, page, initialChannels, totalChannelsCount]);
+  }, [search, selectedCategory, subFilter, formatFilter, monetizedFilter, sort, page, filterKey, isDefault, initialChannels]);
 
   const resetFilters = () => {
     setSearch('');
@@ -127,8 +127,7 @@ export default function ChannelDirectory({
     setMonetizedFilter('');
     setSort('subscribers');
     setPage(1);
-    setChannels(initialChannels);
-    setTotalCount(totalChannelsCount);
+    setResult(null);
   };
 
   const handleFilterSearch = (val: string) => {

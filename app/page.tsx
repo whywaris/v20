@@ -5,6 +5,8 @@ import HeroBanner, { SearchForm } from '@/components/home/HeroBanner';
 import TopNichesBento, { type BentoNiche } from '@/components/home/TopNichesBento';
 import OutlierSpotlight, { type SpotlightVideo } from '@/components/home/OutlierSpotlight';
 import ChannelCard from '@/components/channels/ChannelCard';
+import PostCard, { toCard } from '@/components/blog/PostCard';
+import { getPublishedPosts } from '@/lib/posts';
 import { Channel, Niche, VideoOutlierItem } from '@/types';
 import { toCardChannel } from '@/lib/card-channel';
 import { matchChannels } from '@/lib/niche-match';
@@ -96,8 +98,11 @@ function spotlightOutliers(channels: Channel[], outliers: VideoOutlierItem[]): S
     }));
 }
 
+// Refreshed every 5 minutes so new articles and admin edits show up; saving a post refreshes it immediately.
+export const revalidate = 300;
+
 export default async function HomePage() {
-  const [channels, niches] = await Promise.all([getChannels(), getNiches()]);
+  const [channels, niches, posts] = await Promise.all([getChannels(), getNiches(), getPublishedPosts()]);
   const outliers = getOutliers();
 
   return (
@@ -156,6 +161,23 @@ export default async function HomePage() {
             </Link>
           </div>
         </section>
+
+        {posts.length > 0 && (
+          <section className="py-12" aria-labelledby="latest-posts-title">
+            <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
+              <div>
+                <h2 id="latest-posts-title" className="text-2xl font-extrabold tracking-tight text-[var(--text-ink)] sm:text-3xl">Latest from the blog</h2>
+                <p className="mt-1 text-[15px] text-[var(--text-muted)]">Guides and data breakdowns for small YouTube channels.</p>
+              </div>
+              <Link href="/blog" className="text-[14px] font-semibold text-[var(--brand-mark)] hover:underline">All articles →</Link>
+            </div>
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {posts.slice(0, 3).map((p) => (
+                <PostCard key={p.slug} post={toCard(p)} />
+              ))}
+            </div>
+          </section>
+        )}
 
         <section className="my-12 rounded-3xl border border-[var(--border-line)] bg-[var(--bg-surface)] px-5 py-12 text-center sm:px-10 sm:py-16">
           <h2 className="text-3xl font-extrabold tracking-tight text-[var(--text-ink)] sm:text-4xl">Start with a niche</h2>

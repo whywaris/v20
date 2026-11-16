@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { categoriesOf, fromRow, isLive, readTimeFor, relatedPosts, slugifyPost, validatePostInput } from './posts.ts';
-import { renderArticle } from './markdown.ts';
+import { renderArticle, splitForAd } from './markdown.ts';
 
 const long = 'word '.repeat(20);
 const row = (slug: string, category: string | null, published_at: string | null, status: 'published' | 'draft' = 'published') =>
@@ -66,4 +66,11 @@ test('renderArticle adds heading ids and a table of contents', () => {
   ]);
   assert.match(html, /<h2 id="intro">Intro<\/h2>/);
   assert.match(html, /target="_blank" rel="noopener noreferrer"/);
+});
+
+test('splitForAd puts the ad after the second section, and skips short articles', () => {
+  assert.deepEqual(splitForAd('<p>a</p><h2 id="x">1</h2><p>b</p><h2>2</h2><p>c</p><h2>3</h2><p>d</p>'), ['<p>a</p><h2 id="x">1</h2><p>b</p><h2>2</h2><p>c</p>', '<h2>3</h2><p>d</p>']);
+  assert.deepEqual(splitForAd('<h2>1</h2><p>b</p><h2>2</h2>'), ['<h2>1</h2><p>b</p>', '<h2>2</h2>']);
+  assert.equal(splitForAd('<h2>only one</h2><p>x</p>'), null);
+  assert.equal(splitForAd('<p>no headings</p><h3>sub</h3>'), null);
 });

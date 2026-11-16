@@ -1,8 +1,9 @@
 'use client';
 
 import React, { useEffect, useRef } from 'react';
+import { ADSENSE_CLIENT_ID } from '@/lib/site';
 
-export type AdFormat = 'horizontal' | 'in-feed' | 'rectangle';
+export type AdFormat = 'horizontal' | 'in-feed' | 'in-article' | 'rectangle';
 
 declare global {
   interface Window {
@@ -11,10 +12,11 @@ declare global {
 }
 
 // NEXT_PUBLIC_* values must be written out literally so Next.js can inline them in the browser bundle.
-const CLIENT_ID = process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID;
+const CLIENT_ID = ADSENSE_CLIENT_ID;
 const SLOT_IDS: Record<AdFormat, string | undefined> = {
   horizontal: process.env.NEXT_PUBLIC_ADSENSE_SLOT_HORIZONTAL,
   'in-feed': process.env.NEXT_PUBLIC_ADSENSE_SLOT_INFEED,
+  'in-article': process.env.NEXT_PUBLIC_ADSENSE_SLOT_INARTICLE,
   rectangle: process.env.NEXT_PUBLIC_ADSENSE_SLOT_RECTANGLE,
 };
 const INFEED_LAYOUT_KEY = process.env.NEXT_PUBLIC_ADSENSE_INFEED_LAYOUT_KEY;
@@ -25,11 +27,13 @@ const SHOW_PLACEHOLDERS = process.env.NEXT_PUBLIC_SHOW_AD_PLACEHOLDERS === 'true
 const RESERVED: Record<AdFormat, string> = {
   horizontal: 'min-h-[100px] sm:min-h-[90px]',
   'in-feed': 'min-h-[250px]',
+  'in-article': 'min-h-[250px]',
   rectangle: 'min-h-[250px]',
 };
 const LABEL: Record<AdFormat, string> = {
   horizontal: 'Leaderboard ad',
   'in-feed': 'In-feed ad',
+  'in-article': 'In-article ad',
   rectangle: 'Rectangle ad',
 };
 
@@ -58,14 +62,16 @@ export default function AdSlot({ format, className = '' }: { format: AdFormat; c
   if (live) {
     const fluidInFeed = format === 'in-feed' && INFEED_LAYOUT_KEY;
     return (
-      <aside aria-label="Advertisement" className={`w-full overflow-hidden ${RESERVED[format]} ${className}`}>
+      <aside aria-label="Advertisement" className={`ad-slot w-full overflow-hidden ${RESERVED[format]} ${className}`}>
         <ins
           ref={insRef}
           className="adsbygoogle"
-          style={{ display: 'block' }}
+          style={{ display: 'block', ...(format === 'in-article' ? { textAlign: 'center' as const } : {}) }}
           data-ad-client={CLIENT_ID}
           data-ad-slot={slotId}
-          {...(fluidInFeed
+          {...(format === 'in-article'
+            ? { 'data-ad-format': 'fluid', 'data-ad-layout': 'in-article' }
+            : fluidInFeed
             ? { 'data-ad-format': 'fluid', 'data-ad-layout-key': INFEED_LAYOUT_KEY }
             : { 'data-ad-format': format === 'rectangle' ? 'rectangle' : 'auto', 'data-full-width-responsive': 'true' })}
         />

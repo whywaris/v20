@@ -42,18 +42,19 @@ export default function OutliersClient({ initialVideos, totalVideosCount = 18086
   const [formatFilter, setFormatFilter] = useState('');
   const [sort, setSort] = useState<'views' | 'multiplier' | 'recent'>('multiplier');
   const [page, setPage] = useState(1);
-  const [videos, setVideos] = useState<VideoOutlierItem[]>(initialVideos);
-  const [totalCount, setTotalCount] = useState(totalVideosCount);
   const [loading, setLoading] = useState(false);
+  // Results are stored with the filters they belong to, so a stale list is never shown or appended to.
+  const [result, setResult] = useState<{ key: string; items: VideoOutlierItem[]; total: number } | null>(null);
+  const filterKey = JSON.stringify([search, selectedCategory, multiplierFilter, formatFilter, sort]);
+  const isDefault = !search && !selectedCategory && !multiplierFilter && !formatFilter && sort === 'multiplier';
+  const base = isDefault ? { items: initialVideos, total: totalVideosCount } : { items: [] as VideoOutlierItem[], total: 0 };
+  const current = result?.key === filterKey ? result : base;
+  const videos = current.items;
+  const totalCount = current.total;
 
   // Sync / query from cached API when filters or page change
   React.useEffect(() => {
-    const isDefault = !search && !selectedCategory && !multiplierFilter && !formatFilter && sort === 'multiplier';
-    if (isDefault && page === 1) {
-      setVideos(initialVideos);
-      setTotalCount(totalVideosCount);
-      return;
-    }
+    if (isDefault && page === 1) return; // the server-rendered first page
 
     const timer = setTimeout(async () => {
       setLoading(true);
@@ -70,12 +71,11 @@ export default function OutliersClient({ initialVideos, totalVideosCount = 18086
         const res = await fetch(`/api/outliers?${params.toString()}`);
         if (res.ok) {
           const data = await res.json();
-          if (page === 1) {
-            setVideos(data.videos || []);
-          } else {
-            setVideos((prev) => [...prev, ...(data.videos || [])]);
-          }
-          setTotalCount(data.total || 0);
+          const fresh: VideoOutlierItem[] = data.videos || [];
+          setResult((prev) => {
+            const start = page === 1 ? [] : prev?.key === filterKey ? prev.items : isDefault ? initialVideos : [];
+            return { key: filterKey, items: [...start, ...fresh], total: data.total || 0 };
+          });
         }
       } catch (err) {
         console.error('Error fetching outliers:', err);
@@ -85,7 +85,7 @@ export default function OutliersClient({ initialVideos, totalVideosCount = 18086
     }, search ? 250 : 0);
 
     return () => clearTimeout(timer);
-  }, [search, selectedCategory, multiplierFilter, formatFilter, sort, page, initialVideos, totalVideosCount]);
+  }, [search, selectedCategory, multiplierFilter, formatFilter, sort, page, filterKey, isDefault, initialVideos]);
 
   const resetFilters = () => {
     setSearch('');
@@ -94,8 +94,7 @@ export default function OutliersClient({ initialVideos, totalVideosCount = 18086
     setFormatFilter('');
     setSort('multiplier');
     setPage(1);
-    setVideos(initialVideos);
-    setTotalCount(totalVideosCount);
+    setResult(null);
   };
 
   const handleFilterChange = (setter: (val: string) => void, val: string) => {
@@ -172,7 +171,7 @@ export default function OutliersClient({ initialVideos, totalVideosCount = 18086
           <select
             value={sort}
             onChange={(e) => {
-              setSort(e.target.value as any);
+              setSort(e.target.value as typeof sort);
               setPage(1);
             }}
             className="h-10 px-3 text-xs sm:text-sm rounded-xl bg-[var(--bg-surface-2)] border border-[var(--border-line)] text-[var(--text-ink)] focus:outline-none focus:border-[var(--brand-mark)]"

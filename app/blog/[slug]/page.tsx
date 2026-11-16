@@ -2,10 +2,11 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
 import { ArrowRight, Calendar, Clock, ListOrdered } from 'lucide-react';
+import AdSlot from '@/components/ads/AdSlot';
 import PostCard, { toCard } from '@/components/blog/PostCard';
 import ReadingProgress from '@/components/blog/ReadingProgress';
 import ShareButtons from '@/components/blog/ShareButtons';
-import { renderArticle } from '@/lib/markdown';
+import { renderArticle, splitForAd } from '@/lib/markdown';
 import { getPublishedPosts, relatedPosts } from '@/lib/posts';
 import { OPERATOR_NAME, SITE_URL } from '@/lib/site';
 
@@ -52,6 +53,8 @@ export default async function BlogPostPage({ params }: Props) {
   if (!found) notFound();
   const { post, related } = found;
   const { html, toc } = renderArticle(post.content);
+  const split = splitForAd(html);
+  const prose = 'prose-post max-w-none text-[16.5px] leading-[1.8] text-[var(--text-ink)]';
   const url = `${SITE_URL}/blog/${post.slug}`;
 
   return (
@@ -115,6 +118,8 @@ export default async function BlogPostPage({ params }: Props) {
           </div>
         </header>
 
+        <AdSlot format="horizontal" className="mx-auto mt-6 max-w-3xl" />
+
         {post.coverImage && (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={post.coverImage} alt="" className="mx-auto mt-8 aspect-[16/9] w-full max-w-4xl rounded-2xl border border-[var(--border-line)] object-cover" />
@@ -130,7 +135,15 @@ export default async function BlogPostPage({ params }: Props) {
                 <Toc items={toc} />
               </details>
             )}
-            <div className="prose-post max-w-none text-[16.5px] leading-[1.8] text-[var(--text-ink)]" dangerouslySetInnerHTML={{ __html: html }} />
+            {split ? (
+              <>
+                <div className={prose} dangerouslySetInnerHTML={{ __html: split[0] }} />
+                <AdSlot format="in-article" className="my-10" />
+                <div className={prose} dangerouslySetInnerHTML={{ __html: split[1] }} />
+              </>
+            ) : (
+              <div className={prose} dangerouslySetInnerHTML={{ __html: html }} />
+            )}
 
             <div className="mt-10 border-t border-[var(--border-line)] pt-6">
               <ShareButtons url={url} title={post.title} />

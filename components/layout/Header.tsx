@@ -1,15 +1,23 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useSyncExternalStore } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Sparkles, Bookmark, Sun, Moon, LogIn, LogOut, Compass, Layers, BookOpen, Flame, Menu, X, Shield } from 'lucide-react';
 import type { User } from '@supabase/supabase-js';
 import { createClient, signInWithGoogle } from '@/lib/supabase/client';
 
+// The theme lives on <html data-theme>, set before hydration by the inline script in app/layout.tsx.
+const readTheme = () => (document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark') as 'light' | 'dark';
+const subscribeTheme = (onChange: () => void) => {
+  const obs = new MutationObserver(onChange);
+  obs.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+  return () => obs.disconnect();
+};
+
 export default function Header() {
   const pathname = usePathname();
-  const [theme, setTheme] = useState<'light' | 'dark'>('dark');
+  const theme = useSyncExternalStore(subscribeTheme, readTheme, () => 'dark' as const);
   const [menuOpen, setMenuOpen] = useState(false);
   const [user, setUser] = useState<User | null>(null);
 
@@ -24,11 +32,6 @@ export default function Header() {
   const userAvatar = user?.user_metadata?.avatar_url as string | undefined;
   const signOutAction = `/auth/signout?next=${encodeURIComponent(pathname)}`;
 
-  useEffect(() => {
-    const savedTheme = (localStorage.getItem('yt_theme') as 'light' | 'dark') || 'dark';
-    setTheme(savedTheme);
-    document.documentElement.setAttribute('data-theme', savedTheme);
-  }, []);
 
   // While the mobile drawer is open: no background scrolling, Escape closes it.
   useEffect(() => {
@@ -45,7 +48,6 @@ export default function Header() {
 
   const toggleTheme = () => {
     const newTheme = theme === 'dark' ? 'light' : 'dark';
-    setTheme(newTheme);
     localStorage.setItem('yt_theme', newTheme);
     document.documentElement.setAttribute('data-theme', newTheme);
   };

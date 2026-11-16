@@ -9,6 +9,7 @@ import { POST_COLUMNS, categorySlug, fromRow, validatePostInput, type PostRow } 
 
 function refreshBlog(...slugs: string[]) {
   revalidatePath('/blog', 'layout'); // the list, every article and category page
+  revalidatePath('/'); // "Latest from the blog" on the homepage
   for (const s of slugs) revalidatePath(`/blog/${s}`);
   revalidatePath('/blog-sitemap.xml');
   revalidatePath('/sitemap.xml');

@@ -78,6 +78,9 @@ body {
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
 }
 
+/* An ad slot AdSense couldn't fill collapses instead of leaving an empty reserved box. */
+.ad-slot:has(> ins[data-ad-status='unfilled']) { display: none; }
+
 .btn-accent {
   background-color: var(--brand-accent);
   color: #ffffff;

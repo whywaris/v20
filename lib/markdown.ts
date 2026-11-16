@@ -36,3 +36,13 @@ export function renderArticle(markdown: string): { html: string; toc: TocItem[] 
   const html = md.parse(markdown) as string;
   return { html, toc };
 }
+
+/**
+ * Where the in-article ad goes: after the second H2 section (before the third H2), or before the second H2
+ * when there are only two. Returns null for short articles with fewer than two H2s (no mid-article ad).
+ */
+export function splitForAd(html: string): [string, string] | null {
+  const starts = [...html.matchAll(/<h2[\s>]/g)].map((m) => m.index!);
+  const at = starts[2] ?? starts[1];
+  return at === undefined ? null : [html.slice(0, at), html.slice(at)];
+}

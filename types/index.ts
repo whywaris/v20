@@ -70,8 +70,8 @@ export interface Channel {
     whyItWorks?: string[];
     contentPillars?: string[];
     titlePatterns?: string[];
-    avatarDetails?: any;
-    persona?: any;
+    avatarDetails?: Record<string, unknown> | null;
+    persona?: Record<string, unknown> | null;
     videoFormat?: string | null;
   } | null;
 }
@@ -93,7 +93,7 @@ export interface Niche {
   summary: string;
 }
 
-export interface SwipeVideo extends VideoOutlierItem {}
+export type SwipeVideo = VideoOutlierItem;
 
 export interface FilterState {
   search: string;
