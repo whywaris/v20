@@ -1,4 +1,4 @@
-import { BUILD_TIME, dataLastmod, postDate, sitemapIndexXml, xmlResponse } from '@/lib/sitemap';
+import { BUILD_TIME, postDate, sitemapIndexXml, xmlResponse } from '@/lib/sitemap';
 import { getPublishedPosts } from '@/lib/posts';
 
 // Generated at build time and refreshed once a day.
@@ -10,8 +10,6 @@ export async function GET() {
   return xmlResponse(
     sitemapIndexXml([
       { file: 'pages-sitemap.xml', lastmod: BUILD_TIME },
-      { file: 'niches-sitemap.xml', lastmod: dataLastmod('unified_niches.json') },
-      { file: 'channels-sitemap.xml', lastmod: dataLastmod('unified_channels.json') },
       { file: 'blog-sitemap.xml', lastmod: newestPost ?? BUILD_TIME },
     ])
   );

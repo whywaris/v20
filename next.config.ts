@@ -12,14 +12,18 @@ const nextConfig: NextConfig = {
       { protocol: 'https', hostname: 'images.unsplash.com' },
     ],
   },
-  // The four built-in template articles were removed; send their old URLs to the blog instead of a 404.
+  // Removed pages send visitors and Google to the blog instead of a 404: the old channel/niche/outlier
+  // directory (the site is blog-only now) and the four built-in template articles.
   async redirects() {
-    return [
-      'top-high-rpm-youtube-niches-2026',
-      'how-to-build-faceless-history-channel-ai',
-      'viral-youtube-title-formulas-deconstructed',
-      'monetizing-youtube-beyond-adsense-ebooks-funnels',
-    ].map((slug) => ({ source: `/blog/${slug}`, destination: '/blog', permanent: true }));
+    const removed = [
+      '/channels', '/channel/:path*', '/niche', '/niche/:path*', '/outliers', '/swipe-file', '/saved', '/mcp',
+      '/channels-sitemap.xml', '/niches-sitemap.xml',
+      '/blog/top-high-rpm-youtube-niches-2026',
+      '/blog/how-to-build-faceless-history-channel-ai',
+      '/blog/viral-youtube-title-formulas-deconstructed',
+      '/blog/monetizing-youtube-beyond-adsense-ebooks-funnels',
+    ];
+    return removed.map((source) => ({ source, destination: '/blog', permanent: true }));
   },
   async headers() {
     return [

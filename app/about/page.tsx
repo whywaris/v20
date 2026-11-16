@@ -8,7 +8,7 @@ import { CONTACT_EMAIL, NOT_AFFILIATED, OPERATOR_NAME } from '@/lib/site';
 export const metadata: Metadata = {
   title: 'About Us · YT Niches',
   description:
-    'Who runs YT Niches, why it was built, how channel stats, RPM estimates and outlier scores are researched, and our commitment to transparency.',
+    'Who writes YT Niches, what the blog covers, how articles are researched, and our commitment to transparency.',
   alternates: { canonical: 'https://ytniches.com/about' },
 };
 
@@ -17,65 +17,48 @@ export default function AboutPage() {
     <LegalPage icon={Info} badge="Company & Trust" title="About YT Niches">
       <Section title="Who runs YT Niches">
         <p>
-          YT Niches is built and run by <strong>{OPERATOR_NAME}</strong>, an independent researcher who studies how small
-          YouTube channels find an audience and turn it into income. It is a small, independent project, not a media
+          YT Niches is written and run by <strong>{OPERATOR_NAME}</strong>, an independent researcher who studies how small
+          YouTube channels find an audience and turn it into income. It is a small, independent publication, not a media
           company or agency.
         </p>
         <p>{NOT_AFFILIATED}</p>
       </Section>
 
-      <Section title="Why we built it">
+      <Section title="What we write about">
         <p>
           Most advice about choosing a YouTube niche is based on a handful of famous channels with millions of
           subscribers. Those are the worst examples to copy: they are hard to compete with and say little about what a
           new creator can realistically achieve.
         </p>
         <p>
-          YT Niches focuses on <strong>low-competition channels with under 250,000 subscribers</strong>. Seeing what
-          works for smaller channels (their topics, formats, upload rhythm and how they make money) gives new creators a
-          more honest picture of where an opportunity really is.
+          The <Link href="/blog">YT Niches blog</Link> focuses on what works for <strong>smaller channels</strong>: how to
+          pick a niche that pays, which formats suit faceless creators, how to grow from zero, and how channels turn views
+          into income through ads, sponsors and their own products.
         </p>
       </Section>
 
-      <Section title="How our research works">
+      <Section title="How our articles are researched">
         <ul>
           <li>
-            <strong>Channel statistics</strong> (subscribers, total views, video counts, popular videos) come from
-            publicly visible YouTube channel data. They are snapshots taken at the time of collection, so live numbers on
-            YouTube may be higher or lower.
+            Articles draw on publicly visible YouTube channels and videos, creator-reported benchmarks and our own
+            analysis. Where we quote numbers, we say where they come from and when they were collected.
           </li>
           <li>
-            <strong>RPM ranges and revenue figures are estimates</strong>, not real earnings. RPM (revenue per 1,000
-            views) is estimated per topic from publicly reported creator benchmarks. Actual RPM varies widely with
-            audience country, video length, season and ad settings. Monthly revenue figures multiply estimated views by
-            that range.
+            <strong>RPM and earnings figures are estimates</strong>, not promises. RPM (revenue per 1,000 views) varies
+            widely with audience country, video length, season and ad settings.
           </li>
-          <li>
-            <strong>Outlier scores</strong> compare a video&apos;s views with the typical views of the channel that
-            published it. A 10&times; outlier got about ten times the channel&apos;s usual views.
-          </li>
-          <li>
-            <strong>Niche labels, formats and &ldquo;why it works&rdquo; notes</strong> are our own research and
-            interpretation of public titles, descriptions and thumbnails. They are opinions, not facts reported by the
-            channels.
-          </li>
-          <li>
-            We exclude TV networks, broadcast media and large kids-animation channels, because they are not realistic
-            models for an independent creator.
-          </li>
+          <li>Opinions and recommendations are clearly our own interpretation, not facts reported by the channels we mention.</li>
+          <li>Articles are updated when the information in them changes; the date on each article shows when it was published.</li>
         </ul>
-        <p>
-          More detail on how we read the data is in our <Link href="/blog">research articles</Link>.
-        </p>
       </Section>
 
       <Section title="Our commitment to transparency">
         <ul>
-          <li>Estimates are always labeled as estimates. Nothing on this site is financial advice or a promise of income (see our <Link href="/disclaimer">Earnings Disclaimer</Link>).</li>
-          <li>If we show advertising, sponsored content or affiliate links, they will be clearly marked.</li>
+          <li>Nothing on this site is financial advice or a promise of income (see our <Link href="/disclaimer">Earnings Disclaimer</Link>).</li>
+          <li>The site is funded by advertising (Google AdSense). Ads are clearly separated from articles, and any sponsored content or affiliate links will be clearly marked.</li>
           <li>
-            Channel owners can ask us to correct or remove information about their channel at any time. Email{' '}
-            <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a> with the channel link and we will act on it within a
+            Creators mentioned in an article can ask us to correct or remove information at any time. Email{' '}
+            <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a> with the article link and we will act on it within a
             few days.
           </li>
           <li>How we handle visitor data is explained in our <Link href="/privacy">Privacy Policy</Link> and <Link href="/cookies">Cookie Policy</Link>.</li>
@@ -84,7 +67,7 @@ export default function AboutPage() {
 
       <Section title="Get in touch">
         <p>
-          Questions, corrections or partnership ideas: <Link href="/contact">contact us</Link> or email{' '}
+          Questions, corrections, topic ideas or partnership requests: <Link href="/contact">contact us</Link> or email{' '}
           <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>.
         </p>
       </Section>

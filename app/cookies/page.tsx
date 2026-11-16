@@ -12,7 +12,7 @@ export const metadata: Metadata = {
   alternates: { canonical: 'https://ytniches.com/cookies' },
 };
 
-const LAST_UPDATED = 'November 2, 2026';
+const LAST_UPDATED = 'November 16, 2026';
 
 export default function CookiePolicyPage() {
   return (
@@ -29,8 +29,7 @@ export default function CookiePolicyPage() {
         <p>These are needed for the site to work and do not track you across other websites:</p>
         <ul>
           <li><strong>Theme preference</strong> (<code>yt_theme</code>, local storage): remembers whether you chose dark or light mode.</li>
-          <li><strong>Sign-in session</strong> (<code>sb-…-auth-token</code>, cookie): set only if you sign in with Google, so you stay signed in. Removed when you sign out.</li>
-          <li><strong>Admin session</strong> (<code>yt_admin</code>, cookie): set only when a site administrator logs in. Ordinary visitors never receive it.</li>
+          <li><strong>Admin session</strong> (<code>sb-…-auth-token</code>, cookie): set only when a site administrator signs in to manage the blog. Ordinary visitors never receive it.</li>
         </ul>
       </Section>
 
@@ -60,10 +59,19 @@ export default function CookiePolicyPage() {
       </Section>
 
       <Section title="4. Analytics">
+        <ul>
+          <li>
+            <strong>Google Analytics</strong> (<code>_ga</code>, <code>_ga_*</code> cookies, kept up to 2 years): counts
+            visits and shows which pages are read and how visitors found the site. Opt out with the{' '}
+            <a href="https://tools.google.com/dlpage/gaoptout" target="_blank" rel="noopener noreferrer">Google Analytics opt-out add-on</a>.
+          </li>
+          <li>
+            <strong>Ahrefs Web Analytics</strong>: privacy-friendly page-view statistics; it does not set cookies.
+          </li>
+        </ul>
         <p>
-          We do not currently run any analytics or tracking scripts. Our hosting provider (Vercel) keeps standard server
-          logs, such as IP address, browser type and pages requested, to keep the service secure and working. If we add
-          an analytics tool, we will update this policy and name it here.
+          Our hosting provider (Vercel) also keeps standard server logs, such as IP address, browser type and pages
+          requested, to keep the service secure and working.
         </p>
       </Section>
 

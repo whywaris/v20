@@ -1,6 +1,5 @@
-import Link from 'next/link';
 import { Metadata } from 'next';
-import { PenLine } from 'lucide-react';
+import BlogEmpty from '@/components/blog/BlogEmpty';
 import BlogList from '@/components/blog/BlogList';
 import BlogShell from '@/components/blog/BlogShell';
 import { toCard } from '@/components/blog/PostCard';
@@ -21,7 +20,7 @@ export default async function BlogHubPage() {
   return (
     <BlogShell
       title="YouTube growth, RPM & niche playbooks"
-      description="Practical guides and data breakdowns from 6,800+ small YouTube channels and 18,000+ outlier videos."
+      description="Practical guides on choosing a profitable niche, growing a faceless channel and monetizing it."
       categories={categoriesOf(posts)}
       crumbs={[{ name: 'Blog', href: '/blog' }]}
     >
@@ -37,21 +36,7 @@ export default async function BlogHubPage() {
           }),
         }}
       />
-      {posts.length ? (
-        <BlogList posts={posts.map(toCard)} />
-      ) : (
-        <div className="rounded-3xl border border-dashed border-[var(--border-line-strong)] px-6 py-16 text-center">
-          <PenLine className="mx-auto size-8 text-[var(--brand-mark)]" />
-          <h2 className="mt-4 text-xl font-bold text-[var(--text-ink)]">New articles are on the way</h2>
-          <p className="mx-auto mt-2 max-w-md text-[15px] text-[var(--text-muted)]">
-            In the meantime, explore the channels and niches the guides are based on.
-          </p>
-          <div className="mt-6 flex flex-wrap justify-center gap-3">
-            <Link href="/channels" className="btn-accent inline-flex h-11 items-center rounded-full px-6 text-[14px]">Browse channels</Link>
-            <Link href="/niche" className="inline-flex h-11 items-center rounded-full border border-[var(--border-line-strong)] px-6 text-[14px] font-semibold text-[var(--text-ink)]">Explore niches</Link>
-          </div>
-        </div>
-      )}
+      {posts.length ? <BlogList posts={posts.map(toCard)} /> : <BlogEmpty />}
     </BlogShell>
   );
 }

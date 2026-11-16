@@ -1,35 +1,23 @@
 import Link from 'next/link';
 import { CheckCircle2, ExternalLink, XCircle } from 'lucide-react';
-import { PageHeader, cardCls, shortDate } from '@/components/admin/ui';
-import { overrideCount } from '@/lib/admin-queries';
-import { getChannels, getNiches, getOutliers } from '@/lib/data';
-import { nicheChannelCounter } from '@/lib/niche-match';
-import { getPublishedPosts } from '@/lib/posts';
-import { SITE_URL } from '@/lib/site';
-import { dataLastmod } from '@/lib/sitemap';
+import { PageHeader, cardCls } from '@/components/admin/ui';
+import { categoriesOf, getPublishedPosts } from '@/lib/posts';
+import { ADSENSE_CLIENT_ID, SITE_URL } from '@/lib/site';
 
-// Server-side health check of what Google sees: sitemap sizes, thin pages, data gaps and missing config.
+// What search engines see of the blog, and anything that needs fixing.
 export default async function AdminSeoPage() {
-  const [channels, niches, posts, edits] = await Promise.all([getChannels(), getNiches(), getPublishedPosts(), overrideCount()]);
-  const outliers = getOutliers();
-  const countChannels = nicheChannelCounter(channels);
-  const emptyNiches = niches.filter((n) => countChannels(n) === 0);
-  const channelIds = new Set(channels.map((c) => c.id));
-  const orphanOutliers = outliers.filter((o) => !o.channelId || !channelIds.has(o.channelId)).length;
-  const noThumb = channels.filter((c) => !c.thumbnail).length;
-
-  const sitemaps = [
-    ['Niches (indexable)', niches.length - emptyNiches.length, '/niches-sitemap.xml'],
-    ['Channels', channels.length, '/channels-sitemap.xml'],
-    ['Blog posts', posts.length, '/blog-sitemap.xml'],
-  ] as const;
+  const posts = await getPublishedPosts();
+  const categories = categoriesOf(posts);
+  const noSeo = posts.filter((p) => !p.seoDescription && !p.excerpt);
+  const noCover = posts.filter((p) => !p.coverImage);
+  const thin = posts.filter((p) => p.content.trim().split(/\s+/).length < 600);
 
   const env = [
     ['Supabase URL + anon key', !!process.env.NEXT_PUBLIC_SUPABASE_URL && !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY],
-    ['Supabase service role key (admin features)', !!process.env.SUPABASE_SERVICE_ROLE_KEY],
+    ['Supabase service role key (admin, uploads)', !!process.env.SUPABASE_SERVICE_ROLE_KEY],
     ['ADMIN_EMAILS', !!process.env.ADMIN_EMAILS?.trim()],
-    ['NEXT_PUBLIC_SITE_URL', !!process.env.NEXT_PUBLIC_SITE_URL],
-    ['AdSense publisher ID', !!process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID],
+    [`AdSense publisher ID (${ADSENSE_CLIENT_ID})`, !!ADSENSE_CLIENT_ID],
+    ['AdSense ad units (leaderboard / in-article)', !!process.env.NEXT_PUBLIC_ADSENSE_SLOT_HORIZONTAL && !!process.env.NEXT_PUBLIC_ADSENSE_SLOT_INARTICLE],
   ] as const;
 
   const links = [
@@ -39,54 +27,53 @@ export default async function AdminSeoPage() {
     ['Vercel', 'https://vercel.com/dashboard'],
     ['Supabase', 'https://supabase.com/dashboard'],
     ['Sitemap index', `${SITE_URL}/sitemap.xml`],
+    ['ads.txt', `${SITE_URL}/ads.txt`],
   ] as const;
 
   const issue = (n: number) => (n ? 'text-amber-600 dark:text-amber-400' : 'text-emerald-600 dark:text-emerald-400');
+  const list = (items: typeof posts) =>
+    items.length > 0 && (
+      <ul className="mt-2 space-y-1 text-[12.5px]">
+        {items.slice(0, 8).map((p) => (
+          <li key={p.slug}>
+            <Link href="/admin/blog" className="text-[var(--text-muted)] hover:text-[var(--brand-mark)]">{p.title}</Link>
+          </li>
+        ))}
+      </ul>
+    );
 
   return (
     <>
-      <PageHeader title="SEO & Health" description="What search engines see, and anything that needs fixing." />
-
+      <PageHeader title="SEO & Health" description="What search engines see of the blog, and anything that needs fixing." />
       <div className="grid gap-4 lg:grid-cols-2">
         <section className={`${cardCls} p-5`}>
           <h2 className="mb-3 font-bold text-[var(--text-ink)]">Sitemaps</h2>
           <ul className="divide-y divide-[var(--border-line)] text-[13.5px]">
-            {sitemaps.map(([label, n, href]) => (
-              <li key={href} className="flex items-center justify-between py-2">
-                <span className="text-[var(--text-muted)]">{label}</span>
-                <a href={href} target="_blank" className="num-mono font-semibold text-[var(--text-ink)] hover:text-[var(--brand-mark)]">
-                  {n.toLocaleString()} URLs
-                </a>
-              </li>
-            ))}
+            <li className="flex justify-between py-2"><span className="text-[var(--text-muted)]">Articles</span><a href="/blog-sitemap.xml" target="_blank" className="num-mono font-semibold text-[var(--text-ink)] hover:text-[var(--brand-mark)]">{posts.length} URLs</a></li>
+            <li className="flex justify-between py-2"><span className="text-[var(--text-muted)]">Category pages</span><a href="/blog-sitemap.xml" target="_blank" className="num-mono font-semibold text-[var(--text-ink)] hover:text-[var(--brand-mark)]">{categories.length} URLs</a></li>
+            <li className="flex justify-between py-2"><span className="text-[var(--text-muted)]">Site pages</span><a href="/pages-sitemap.xml" target="_blank" className="num-mono font-semibold text-[var(--text-ink)] hover:text-[var(--brand-mark)]">view</a></li>
           </ul>
         </section>
 
         <section className={`${cardCls} p-5`}>
-          <h2 className="mb-3 font-bold text-[var(--text-ink)]">Data</h2>
-          <ul className="divide-y divide-[var(--border-line)] text-[13.5px]">
-            <li className="flex justify-between py-2"><span className="text-[var(--text-muted)]">Channels file updated</span><span>{shortDate(dataLastmod('unified_channels.json').toISOString())}</span></li>
-            <li className="flex justify-between py-2"><span className="text-[var(--text-muted)]">Niches file updated</span><span>{shortDate(dataLastmod('unified_niches.json').toISOString())}</span></li>
-            <li className="flex justify-between py-2"><span className="text-[var(--text-muted)]">Admin edits (overrides)</span><Link href="/admin/channels?status=edited" className="num-mono hover:text-[var(--brand-mark)]">{edits.value}</Link></li>
-            <li className="flex justify-between py-2"><span className="text-[var(--text-muted)]">Channels without an avatar</span><span className={`num-mono ${issue(noThumb)}`}>{noThumb}</span></li>
-            <li className="flex justify-between py-2"><span className="text-[var(--text-muted)]">Outliers whose channel is missing</span><span className={`num-mono ${issue(orphanOutliers)}`}>{orphanOutliers}</span></li>
-          </ul>
-        </section>
-
-        <section className={`${cardCls} p-5`}>
-          <h2 className="mb-1 font-bold text-[var(--text-ink)]">Thin niche pages <span className={`num-mono ${issue(emptyNiches.length)}`}>({emptyNiches.length})</span></h2>
-          <p className="mb-3 text-[13px] text-[var(--text-muted)]">Niches with no matching channels. They are set to noindex and left out of the sitemap. Hide them or add channels.</p>
-          <div className="flex max-h-56 flex-wrap gap-1.5 overflow-y-auto">
-            {emptyNiches.slice(0, 120).map((n) => (
-              <Link key={n.slug} href={`/admin/niches?q=${encodeURIComponent(n.slug)}`} className="rounded-full border border-[var(--border-line)] px-2.5 py-1 text-[12px] text-[var(--text-ink)] hover:border-[var(--brand-accent)]">
-                {n.name}
-              </Link>
-            ))}
-            {emptyNiches.length > 120 && <span className="px-2 py-1 text-[12px] text-[var(--text-muted)]">+{emptyNiches.length - 120} more</span>}
+          <h2 className="mb-3 font-bold text-[var(--text-ink)]">Article checks</h2>
+          <div className="space-y-4 text-[13.5px]">
+            <div>
+              <div className="flex justify-between"><span className="text-[var(--text-muted)]">No meta description or excerpt</span><span className={`num-mono ${issue(noSeo.length)}`}>{noSeo.length}</span></div>
+              {list(noSeo)}
+            </div>
+            <div>
+              <div className="flex justify-between"><span className="text-[var(--text-muted)]">No cover image</span><span className={`num-mono ${issue(noCover.length)}`}>{noCover.length}</span></div>
+              {list(noCover)}
+            </div>
+            <div>
+              <div className="flex justify-between"><span className="text-[var(--text-muted)]">Under 600 words (thin content)</span><span className={`num-mono ${issue(thin.length)}`}>{thin.length}</span></div>
+              {list(thin)}
+            </div>
           </div>
         </section>
 
-        <section className={`${cardCls} p-5`}>
+        <section className={`${cardCls} p-5 lg:col-span-2`}>
           <h2 className="mb-3 font-bold text-[var(--text-ink)]">Configuration</h2>
           <ul className="space-y-2 text-[13.5px]">
             {env.map(([label, ok]) => (

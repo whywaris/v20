@@ -14,7 +14,7 @@ export const metadata: Metadata = {
   },
 };
 
-const LAST_UPDATED = 'November 2, 2026';
+const LAST_UPDATED = 'November 16, 2026';
 
 export default function PrivacyPolicyPage() {
   return (
@@ -26,7 +26,7 @@ export default function PrivacyPolicyPage() {
     >
       <Section title="1. Who we are">
         <p>
-          YT Niches (&quot;we&quot;, &quot;our&quot;, &quot;us&quot;) is an independent research website at{' '}
+          YT Niches (&quot;we&quot;, &quot;our&quot;, &quot;us&quot;) is an independent blog at{' '}
           <strong>https://ytniches.com</strong>, run by {OPERATOR_NAME}. This policy explains what information we
           collect when you visit, how it is used, and the choices you have. Contact:{' '}
           <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>.
@@ -36,10 +36,7 @@ export default function PrivacyPolicyPage() {
       <Section title="2. Information we collect">
         <ul>
           <li>
-            <strong>Google sign-in (optional).</strong> You can browse the site without an account. If you choose
-            &quot;Sign in with Google&quot; to unlock free member insights, Google shares your name, email address and
-            profile picture with us. We never see your Google password. This account data is stored by our
-            authentication provider, Supabase, and used only to keep you signed in. Signing in is free.
+            <strong>No visitor accounts.</strong> You can read everything on the site without signing up or logging in.
           </li>
           <li>
             <strong>Server logs.</strong> Our hosting provider, Vercel, automatically records technical data such as IP
@@ -47,23 +44,23 @@ export default function PrivacyPolicyPage() {
             for security and to keep the site running.
           </li>
           <li>
-            <strong>Messages you send us.</strong> If you email us, use the contact form or suggest a channel, we receive
-            your name, email address and message (or the channel link). Form messages are stored in our database (Supabase)
-            so we can reply, and are deleted on request.
+            <strong>Messages you send us.</strong> If you email us or use the contact form, we receive your name, email
+            address and message. Contact form messages are stored in our database (Supabase) so we can reply, and are
+            deleted on request.
           </li>
           <li>
             <strong>Browser storage.</strong> Your theme choice (dark/light) is stored in your own browser and never sent
             to us.
           </li>
           <li>
+            <strong>Analytics.</strong> Google Analytics and Ahrefs Web Analytics record how the site is used (see
+            section 5).
+          </li>
+          <li>
             <strong>Advertising cookies.</strong> Google and other ad vendors may collect information through cookies, as
             described in section 4.
           </li>
         </ul>
-        <p>
-          The channel information on this site is about public YouTube channels and comes from publicly visible YouTube
-          data, not from our visitors. Channel owners can ask us to correct or remove it (see section 8).
-        </p>
       </Section>
 
       <Section title="3. How we use information">
@@ -121,8 +118,17 @@ export default function PrivacyPolicyPage() {
 
       <Section title="5. Analytics">
         <p>
-          We do not currently use analytics or tracking tools beyond our hosting provider&apos;s server logs. If that
-          changes, this policy will name the tool and explain what it collects.
+          We use <strong>Google Analytics</strong> (Google LLC) and <strong>Ahrefs Web Analytics</strong> (Ahrefs Pte.
+          Ltd.) to understand which pages are read and how visitors find the site. They collect information such as
+          pages visited, time on page, referring site, approximate location (country/city), device and browser.
+          Google Analytics sets cookies (for example <code>_ga</code>) to recognise returning visitors; Ahrefs Web
+          Analytics is designed to work without cookies.
+        </p>
+        <p>
+          You can opt out of Google Analytics with the{' '}
+          <a href="https://tools.google.com/dlpage/gaoptout" target="_blank" rel="noopener noreferrer">Google Analytics opt-out browser add-on</a>.
+          Read how Google uses this data at{' '}
+          <a href="https://policies.google.com/technologies/partner-sites" target="_blank" rel="noopener noreferrer">policies.google.com/technologies/partner-sites</a>.
         </p>
       </Section>
 
@@ -130,16 +136,17 @@ export default function PrivacyPolicyPage() {
         <p>We share information only with service providers that run the site, and only as needed:</p>
         <ul>
           <li><strong>Vercel Inc.</strong> (hosting and server logs)</li>
-          <li><strong>Supabase Inc.</strong> (sign-in and account storage, if you sign in with Google)</li>
-          <li><strong>Google LLC</strong> (advertising through AdSense, when ads are shown)</li>
+          <li><strong>Supabase Inc.</strong> (storage of contact form messages)</li>
+          <li><strong>Google LLC</strong> (advertising through AdSense, and Google Analytics)</li>
+          <li><strong>Ahrefs Pte. Ltd.</strong> (website analytics)</li>
         </ul>
         <p>We may also disclose information if required by law or to protect the site and its users.</p>
       </Section>
 
       <Section title="7. Data retention and security">
         <p>
-          Server logs are kept only as long as our hosting provider needs them for security and operations. Emails are
-          kept as long as needed to deal with your request. All traffic to the site is encrypted with HTTPS.
+          Server logs are kept only as long as our hosting provider needs them for security and operations. Emails and contact form
+          messages are kept as long as needed to deal with your request. All traffic to the site is encrypted with HTTPS.
         </p>
       </Section>
 
@@ -147,8 +154,8 @@ export default function PrivacyPolicyPage() {
         <p>
           Depending on where you live (for example under the GDPR in the EU/UK or the CCPA in California), you may have
           the right to access, correct or delete personal information we hold about you, to object to its use, and to
-          opt out of personalized advertising. Channel owners may also ask us to correct or remove information about their
-          channel. Email <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a> and we will respond within 30 days.
+          opt out of personalized advertising. Creators mentioned in an article may also ask us to correct or remove
+          information about them. Email <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a> and we will respond within 30 days.
         </p>
       </Section>
 
@@ -162,8 +169,7 @@ export default function PrivacyPolicyPage() {
 
       <Section title="10. Changes to this policy">
         <p>
-          We may update this policy as the site changes, for example if we add user accounts, analytics or new ad
-          partners. The effective date at the top shows the latest version.
+          We may update this policy as the site changes, for example if we add new analytics tools or ad partners. The effective date at the top shows the latest version.
         </p>
       </Section>
     </LegalPage>

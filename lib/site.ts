@@ -5,4 +5,4 @@ export const SITE_URL = 'https://ytniches.com';
 export const ADSENSE_CLIENT_ID = process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID || 'ca-pub-5238937416358061';
 export const OPERATOR_NAME = 'Waris Jamil';
 export const NOT_AFFILIATED =
-  'YT Niches is an independent research platform not affiliated with Google LLC or YouTube.';
+  'YT Niches is an independent blog, not affiliated with Google LLC or YouTube.';

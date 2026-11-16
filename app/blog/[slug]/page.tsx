@@ -175,10 +175,10 @@ export default async function BlogPostPage({ params }: Props) {
         </div>
 
         <section className="mx-auto mt-16 max-w-5xl rounded-3xl border border-[var(--border-line)] bg-[var(--bg-surface)] p-6 text-center sm:p-10">
-          <h2 className="text-2xl font-bold text-[var(--text-ink)]">Find your niche with real numbers</h2>
-          <p className="mx-auto mt-2 max-w-lg text-[15px] text-[var(--text-muted)]">Browse 6,800+ small channels under 250k subscribers with RPM estimates and their best videos.</p>
-          <Link href="/channels" className="btn-accent mt-6 inline-flex h-11 items-center gap-2 rounded-full px-6 text-[14px]">
-            Browse channels <ArrowRight className="size-4" />
+          <h2 className="text-2xl font-bold text-[var(--text-ink)]">More guides for growing your channel</h2>
+          <p className="mx-auto mt-2 max-w-lg text-[15px] text-[var(--text-muted)]">Niche ideas, RPM breakdowns and growth playbooks for faceless YouTube creators.</p>
+          <Link href="/blog" className="btn-accent mt-6 inline-flex h-11 items-center gap-2 rounded-full px-6 text-[14px]">
+            Read all articles <ArrowRight className="size-4" />
           </Link>
         </section>
 

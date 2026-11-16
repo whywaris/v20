@@ -1,47 +1,36 @@
 import Link from 'next/link';
-import { BookOpen, FilePen, Flame, Inbox, Layers, PenLine, Plus, Send, UserPlus, Users, Video } from 'lucide-react';
+import { BookOpen, CalendarClock, FilePen, Inbox, PenLine, UserPlus, Users } from 'lucide-react';
 import { PageHeader, SetupNote, StatCard, cardCls, shortDate } from '@/components/admin/ui';
-import { latest, listUsers, signedUpWithin, overrideCount, pendingSubmissions, postCount, unreadMessages, type Message } from '@/lib/admin-queries';
-import { getChannels, getNiches, getOutliers } from '@/lib/data';
+import { latest, listUsers, postCount, scheduledCount, signedUpWithin, unreadMessages, type Message } from '@/lib/admin-queries';
 
 export default async function AdminDashboard() {
-  const [channels, niches, users, unread, pending, edits, published, drafts, messages] = await Promise.all([
-    getChannels(),
-    getNiches(),
+  const [users, unread, published, drafts, scheduled, messages] = await Promise.all([
     listUsers(),
     unreadMessages(),
-    pendingSubmissions(),
-    overrideCount(),
     postCount('published'),
     postCount('draft'),
+    scheduledCount(),
     latest<Message>('messages', 5),
   ]);
   const newUsers = signedUpWithin(users.users, 7);
-  const setup = users.missing || unread.missing || edits.missing;
+  const setup = users.missing || unread.missing || published.missing;
 
   return (
     <>
-      <PageHeader title="Dashboard" description="Live numbers from the catalog and Supabase.">
-        <Link href="/admin/channels?new=1" className="btn-accent inline-flex h-9 items-center gap-1.5 rounded-xl px-3 text-[12.5px]">
-          <Plus className="size-4" /> Add channel
-        </Link>
-        <Link href="/admin/blog" className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-[var(--border-line)] px-3 text-[12.5px] font-semibold text-[var(--text-ink)] hover:bg-[var(--bg-surface-2)]">
-          <PenLine className="size-4" /> New post
+      <PageHeader title="Dashboard" description="Your blog, readers and messages at a glance.">
+        <Link href="/admin/blog" className="btn-accent inline-flex h-9 items-center gap-1.5 rounded-xl px-3 text-[12.5px]">
+          <PenLine className="size-4" /> Write an article
         </Link>
       </PageHeader>
       <SetupNote text={setup} />
 
       <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-4">
-        <StatCard label="Channels (live)" value={channels.length} icon={Video} href="/admin/channels" />
-        <StatCard label="Niches (live)" value={niches.length} icon={Layers} href="/admin/niches" />
-        <StatCard label="Outlier videos" value={getOutliers().length} icon={Flame} />
-        <StatCard label="Catalog edits" value={edits.value} icon={FilePen} href="/admin/channels?status=edited" />
+        <StatCard label="Published articles" value={published.value} icon={BookOpen} href="/admin/blog" />
+        <StatCard label="Scheduled" value={scheduled.value} icon={CalendarClock} href="/admin/blog" />
+        <StatCard label="Drafts" value={drafts.value} icon={FilePen} href="/admin/blog" />
+        <StatCard label="Unread messages" value={unread.value} icon={Inbox} href="/admin/inbox" />
         <StatCard label="Users" value={users.users.length} icon={Users} href="/admin/users" />
         <StatCard label="New users (7 days)" value={newUsers} icon={UserPlus} href="/admin/users" />
-        <StatCard label="Unread messages" value={unread.value} icon={Inbox} href="/admin/inbox" />
-        <StatCard label="Pending submissions" value={pending.value} icon={Send} href="/admin/inbox?tab=submissions" />
-        <StatCard label="Published posts" value={published.value} icon={BookOpen} href="/admin/blog" note={published.missing} />
-        <StatCard label="Draft posts" value={drafts.value} icon={FilePen} href="/admin/blog" />
       </div>
 
       <div className="mt-6 grid gap-4 lg:grid-cols-2">

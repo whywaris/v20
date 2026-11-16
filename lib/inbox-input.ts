@@ -1,4 +1,4 @@
-// Validation for the public contact form and "suggest a channel" form. Pure, so it can be tested.
+// Validation for the public contact form. Pure, so it can be tested.
 
 type Body = Record<string, unknown>;
 type Result<T> = { ok: true; value: T } | { ok: false; error: string; spam?: boolean };
@@ -19,27 +19,6 @@ export function validateMessage(b: Body): Result<{ name: string; email: string; 
   if (!EMAIL.test(email)) return { ok: false, error: 'Please enter a valid email address.' };
   if (body.length < 5) return { ok: false, error: 'Please write a message.' };
   return { ok: true, value: { name, email, subject, body } };
-}
-
-/** Only YouTube channel links are accepted, normalised to https. */
-export function validateSubmission(b: Body): Result<{ channel_url: string; suggested_niche: string | null; email: string | null; note: string | null }> {
-  if (isBot(b)) return { ok: false, error: 'Rejected', spam: true };
-  let url: URL;
-  try {
-    url = new URL(str(b.url, 300).replace(/^(?!https?:\/\/)/i, 'https://'));
-  } catch {
-    return { ok: false, error: 'Please paste a YouTube channel link.' };
-  }
-  if (!/^(www\.|m\.)?youtube\.com$/i.test(url.hostname) || url.pathname.length < 2) {
-    return { ok: false, error: 'Please paste a YouTube channel link (youtube.com/@…).' };
-  }
-  url.protocol = 'https:';
-  const email = str(b.email, 200);
-  if (email && !EMAIL.test(email)) return { ok: false, error: 'That email address looks wrong.' };
-  return {
-    ok: true,
-    value: { channel_url: url.toString(), suggested_niche: str(b.niche, 100) || null, email: email || null, note: str(b.note, 1000) || null },
-  };
 }
 
 /**

@@ -19,9 +19,23 @@ async function count(table: string, filter?: [string, string]): Promise<Count> {
 }
 
 export const unreadMessages = () => count('messages', ['status', 'new']);
-export const pendingSubmissions = () => count('submissions', ['status', 'pending']);
-export const overrideCount = () => count('content_overrides');
 export const postCount = (status: 'published' | 'draft') => count('posts', ['status', status]);
+
+/** Published posts whose date is still in the future. */
+export async function scheduledCount(): Promise<Count> {
+  try {
+    const { count: n, error } = await createAdminClient()
+      .from('posts')
+      .select('*', { count: 'exact' })
+      .eq('status', 'published')
+      .gt('published_at', new Date().toISOString())
+      .limit(1);
+    if (error) throw error;
+    return { value: n ?? 0 };
+  } catch (e) {
+    return { value: 0, missing: hint((e as Error).message) };
+  }
+}
 
 export type AdminUser = {
   id: string;
@@ -74,9 +88,8 @@ export const signedUpWithin = (users: AdminUser[], days: number) => {
 };
 
 export type Message = { id: number; name: string; email: string; subject: string | null; body: string; status: string; created_at: string };
-export type Submission = { id: number; channel_url: string; suggested_niche: string | null; email: string | null; note: string | null; status: string; created_at: string };
 
-export async function latest<T>(table: 'messages' | 'submissions', limit = 100): Promise<{ rows: T[]; missing?: string }> {
+export async function latest<T>(table: 'messages', limit = 100): Promise<{ rows: T[]; missing?: string }> {
   try {
     const { data, error } = await createAdminClient().from(table).select('*').order('created_at', { ascending: false }).limit(limit);
     if (error) throw error;

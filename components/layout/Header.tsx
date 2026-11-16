@@ -3,9 +3,7 @@
 import React, { useState, useEffect, useSyncExternalStore } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Sparkles, Bookmark, Sun, Moon, LogIn, LogOut, Compass, Layers, BookOpen, Flame, Menu, X, Shield } from 'lucide-react';
-import type { User } from '@supabase/supabase-js';
-import { createClient, signInWithGoogle } from '@/lib/supabase/client';
+import { Sparkles, Sun, Moon, BookOpen, Home, Info, Mail, Menu, X, Shield } from 'lucide-react';
 
 // The theme lives on <html data-theme>, set before hydration by the inline script in app/layout.tsx.
 const readTheme = () => (document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark') as 'light' | 'dark';
@@ -19,18 +17,6 @@ export default function Header() {
   const pathname = usePathname();
   const theme = useSyncExternalStore(subscribeTheme, readTheme, () => 'dark' as const);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [user, setUser] = useState<User | null>(null);
-
-  // Signed-in Google user (Supabase), kept in sync across sign-in/out.
-  useEffect(() => {
-    const supabase = createClient();
-    supabase.auth.getUser().then(({ data }) => setUser(data.user));
-    const { data } = supabase.auth.onAuthStateChange((_event, session) => setUser(session?.user ?? null));
-    return () => data.subscription.unsubscribe();
-  }, []);
-  const userName = (user?.user_metadata?.full_name as string | undefined) || user?.email || '';
-  const userAvatar = user?.user_metadata?.avatar_url as string | undefined;
-  const signOutAction = `/auth/signout?next=${encodeURIComponent(pathname)}`;
 
 
   // While the mobile drawer is open: no background scrolling, Escape closes it.
@@ -53,11 +39,10 @@ export default function Header() {
   };
 
   const navLinks = [
-    { href: '/channels', label: 'Channels', icon: Compass },
-    { href: '/niche', label: 'Niches', icon: Layers },
-    { href: '/outliers', label: 'Viral Outliers', icon: Flame },
+    { href: '/', label: 'Home', icon: Home },
     { href: '/blog', label: 'Blog', icon: BookOpen },
-    { href: '/about', label: 'About', icon: Sparkles },
+    { href: '/about', label: 'About', icon: Info },
+    { href: '/contact', label: 'Contact', icon: Mail },
   ];
   const mobileLinks = [...navLinks, { href: '/admin', label: 'Admin', icon: Shield }];
   const isActive = (href: string) => pathname === href || (href !== '/' && pathname.startsWith(href));
@@ -110,32 +95,6 @@ export default function Header() {
           >
             {theme === 'dark' ? <Sun className="size-4" /> : <Moon className="size-4" />}
           </button>
-
-          {/* Google account: sign in, or avatar + sign out */}
-          {user ? (
-            <form action={signOutAction} method="post" className="hidden md:flex items-center gap-2">
-              {userAvatar ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={userAvatar} alt="" referrerPolicy="no-referrer" className="size-8 rounded-full border border-[var(--border-line)]" />
-              ) : null}
-              <button
-                type="submit"
-                title={`Signed in as ${userName}`}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[13px] font-medium rounded-full border border-[var(--border-line-strong)] text-[var(--text-ink)] hover:bg-[var(--bg-surface-2)] transition-colors"
-              >
-                <LogOut className="size-3.5" />
-                Sign out
-              </button>
-            </form>
-          ) : (
-            <button
-              onClick={signInWithGoogle}
-              className="hidden md:inline-flex items-center gap-1.5 px-3 py-1.5 text-[13px] font-medium rounded-full border border-[var(--border-line-strong)] text-[var(--text-ink)] hover:bg-[var(--bg-surface-2)] transition-colors"
-            >
-              <LogIn className="size-3.5 text-[var(--brand-mark)]" />
-              Sign In
-            </button>
-          )}
 
           {/* Mobile menu button */}
           <button
@@ -204,31 +163,6 @@ export default function Header() {
               </span>
               <span className="text-[13px] text-[var(--text-muted)]">Switch to {theme === 'dark' ? 'light' : 'dark'}</span>
             </button>
-
-            {user ? (
-              <form action={signOutAction} method="post" className="flex flex-col gap-2">
-                <p className="px-3 text-[13px] text-[var(--text-muted)] truncate">Signed in as {userName}</p>
-                <button
-                  type="submit"
-                  className="flex h-12 w-full items-center justify-center gap-2 rounded-xl border border-[var(--border-line-strong)] text-[15px] font-semibold text-[var(--text-ink)]"
-                >
-                  <LogOut className="size-[18px]" />
-                  Sign out
-                </button>
-              </form>
-            ) : (
-              <button
-                type="button"
-                onClick={() => {
-                  closeMenu();
-                  signInWithGoogle();
-                }}
-                className="btn-accent flex h-12 w-full items-center justify-center gap-2 rounded-xl text-[15px] font-semibold shadow-md"
-              >
-                <LogIn className="size-[18px]" />
-                Sign in with Google
-              </button>
-            )}
           </div>
         </nav>
       </div>

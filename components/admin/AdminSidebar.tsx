@@ -3,12 +3,10 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { BookOpen, ExternalLink, Gauge, Inbox, Layers, LogOut, Menu, SearchCheck, Shield, Users, Video, X } from 'lucide-react';
+import { BookOpen, ExternalLink, Gauge, Inbox, LogOut, Menu, SearchCheck, Shield, Users, X } from 'lucide-react';
 
 const NAV = [
   { href: '/admin', label: 'Dashboard', icon: Gauge },
-  { href: '/admin/channels', label: 'Channels', icon: Video },
-  { href: '/admin/niches', label: 'Niches', icon: Layers },
   { href: '/admin/blog', label: 'Blog', icon: BookOpen },
   { href: '/admin/users', label: 'Users', icon: Users },
   { href: '/admin/inbox', label: 'Inbox', icon: Inbox },

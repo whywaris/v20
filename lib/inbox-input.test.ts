@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { rateLimited, validateMessage, validateSubmission } from './inbox-input.ts';
+import { rateLimited, validateMessage } from './inbox-input.ts';
 
 test('validateMessage', () => {
   const ok = validateMessage({ name: ' Ali ', email: 'ali@x.com', message: 'Hello there', subject: 'Hi' });
@@ -9,16 +9,6 @@ test('validateMessage', () => {
   assert.equal(validateMessage({ name: 'A', email: 'a@b.co', message: '' }).ok, false);
   const bot = validateMessage({ name: 'A', email: 'a@b.co', message: 'Hello there', website: 'spam.com' });
   assert.ok(!bot.ok && bot.spam);
-});
-
-test('validateSubmission only takes YouTube links', () => {
-  const r = validateSubmission({ url: 'youtube.com/@cool', niche: 'Finance' });
-  assert.ok(r.ok && r.value.channel_url === 'https://youtube.com/@cool' && r.value.suggested_niche === 'Finance');
-  assert.ok(validateSubmission({ url: 'http://www.youtube.com/@x' }).ok);
-  assert.equal(validateSubmission({ url: 'javascript:alert(1)' }).ok, false);
-  assert.equal(validateSubmission({ url: 'https://evil.com/youtube.com/@x' }).ok, false);
-  assert.equal(validateSubmission({ url: 'https://youtube.com/' }).ok, false);
-  assert.equal(validateSubmission({ url: 'https://youtube.com/@x', email: 'bad' }).ok, false);
 });
 
 test('rateLimited allows a few then blocks within the window', () => {

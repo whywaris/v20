@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 };
 
 export default function TermsOfServicePage() {
-  const lastUpdated = 'October 27, 2026';
+  const lastUpdated = 'November 16, 2026';
 
   return (
     <div className="mx-auto max-w-4xl px-4 sm:px-6 py-12">
@@ -55,7 +55,7 @@ export default function TermsOfServicePage() {
             2. Intellectual Property &amp; YouTube Attribution
           </h2>
           <p className="text-[var(--text-muted)] mb-3">
-            YT Niches is an independent market research and analysis directory. All YouTube channel names, logos, video thumbnails, and public statistics displayed on this platform remain the intellectual property and copyright of their respective owners and YouTube LLC / Google LLC.
+            YT Niches is an independent blog. Articles, text and original graphics are owned by YT Niches. YouTube channel names, logos, video thumbnails and public statistics mentioned in articles remain the property of their respective owners and YouTube LLC / Google LLC, and are referenced for commentary and education.
           </p>
           <div className="glass rounded-xl p-4 border border-[var(--border-line)]">
             <p className="text-xs text-[var(--text-muted)] m-0">
@@ -69,21 +69,21 @@ export default function TermsOfServicePage() {
             3. Permitted &amp; Prohibited Use
           </h2>
           <p className="text-[var(--text-muted)] mb-3">
-            You are granted a revocable, non-exclusive license to inspect niche data, review video swipe files, and conduct creative research. You agree not to:
+            You may read, share links to and quote short excerpts of our articles with attribution. You agree not to:
           </p>
           <ul className="list-disc pl-5 space-y-2 text-[var(--text-muted)]">
-            <li>Deploy automated scrapers, bots, or distributed crawlers that overwhelm our servers or disrupt service availability.</li>
-            <li>Resell, sublicense, or distribute raw bulk exports of our unified database without explicit written consent.</li>
-            <li>Circumvent or tamper with authentication locks or security features.</li>
+            <li>Republish whole articles or substantial parts of them without written permission.</li>
+            <li>Deploy automated scrapers, bots, or crawlers that overwhelm our servers or disrupt service availability.</li>
+            <li>Tamper with the site, its admin area or its security features.</li>
           </ul>
         </section>
 
         <section>
           <h2 className="text-xl font-bold text-[var(--text-ink)] mb-3">
-            4. User Accounts &amp; Authentication
+            4. Advertising &amp; Third-Party Links
           </h2>
           <p className="text-[var(--text-muted)]">
-            When signing in using Google OAuth, you are responsible for maintaining the security of your account credentials. We reserve the right to suspend or terminate accounts that engage in fraudulent activity, abusive behavior, or violate these terms.
+            The site is free to read and is supported by advertising (Google AdSense). Articles may link to third-party websites and tools; we are not responsible for their content, products or policies. Any sponsored content or affiliate link will be clearly marked.
           </p>
         </section>
 

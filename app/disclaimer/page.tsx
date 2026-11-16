@@ -5,14 +5,14 @@ import { AlertCircle, ArrowLeft, DollarSign, Sparkles, CheckCircle2 } from 'luci
 
 export const metadata: Metadata = {
   title: 'Earnings & RPM Disclaimer · YT Niches',
-  description: 'Earnings and Revenue Disclaimer for YT Niches (ytniches.com). Understanding our algorithmic estimations and statistical modeling.',
+  description: 'Earnings and Revenue Disclaimer for YT Niches (ytniches.com). How to read the RPM, earnings and growth figures in our articles.',
   alternates: {
     canonical: 'https://ytniches.com/disclaimer',
   },
 };
 
 export default function EarningsDisclaimerPage() {
-  const lastUpdated = 'October 27, 2026';
+  const lastUpdated = 'November 16, 2026';
 
   return (
     <div className="mx-auto max-w-4xl px-4 sm:px-6 py-12">
@@ -46,21 +46,21 @@ export default function EarningsDisclaimerPage() {
             <AlertCircle className="size-5" /> Crucial Notice Regarding Revenue Figures
           </h2>
           <p className="text-xs text-[var(--text-ink)] leading-normal m-0">
-            All revenue figures, earnings estimates, and RPM (Revenue Per Mille) numbers displayed across <strong>YT Niches</strong> (<strong>https://ytniches.com/</strong>) are algorithmically computed approximations intended solely for comparative market research and creative inspiration. They are <strong>NOT guarantees of income</strong> and do not represent internal private earnings statements provided by creators or YouTube.
+            All revenue figures, earnings estimates, and RPM (Revenue Per Mille) numbers in articles on <strong>YT Niches</strong> (<strong>https://ytniches.com/</strong>) are approximations based on public data and creator-reported benchmarks, intended for education and comparison. They are <strong>NOT guarantees of income</strong> and do not represent internal private earnings statements provided by creators or YouTube.
           </p>
         </div>
 
         <section>
           <h2 className="text-xl font-bold text-[var(--text-ink)] mb-3">
-            1. How Estimates Are Computed
+            1. Where Our Figures Come From
           </h2>
           <p className="text-[var(--text-muted)] mb-3">
-            Our estimation engine models earnings using:
+            Earnings and RPM figures in our articles are built from:
           </p>
           <ul className="list-disc pl-5 space-y-2 text-[var(--text-muted)]">
-            <li><strong>Public Viewership Velocity:</strong> Publicly available 30-day and all-time video view metrics.</li>
-            <li><strong>Categorical RPM Benchmarks:</strong> Historical industry benchmarks mapped across 3,100+ categories (e.g., Personal Finance commands higher advertiser CPM than Gaming or Memes).</li>
-            <li><strong>Monetization Flags:</strong> Channel monetization indicators, upload frequency, and median video duration (longer videos allowing mid-roll ad placement).</li>
+            <li><strong>Public view counts:</strong> Publicly visible video and channel view numbers at the time of writing.</li>
+            <li><strong>RPM benchmarks by topic:</strong> Creator-reported and industry benchmarks (e.g., Personal Finance commands higher advertiser CPM than Gaming or Memes).</li>
+            <li><strong>Channel signals:</strong> Whether a channel appears monetized, how often it uploads, and typical video length (longer videos allow mid-roll ads).</li>
           </ul>
         </section>
 
@@ -69,7 +69,7 @@ export default function EarningsDisclaimerPage() {
             2. Variables Influencing Actual YouTube Revenue
           </h2>
           <p className="text-[var(--text-muted)] mb-3">
-            Actual creator income varies significantly based on factors our external models cannot access:
+            Actual creator income varies significantly based on factors we cannot see from the outside:
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 my-4">
             <div className="glass rounded-xl p-4 border border-[var(--border-line)]">
