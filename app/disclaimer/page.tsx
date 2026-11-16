@@ -1,7 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { Metadata } from 'next';
-import { AlertCircle, ArrowLeft, DollarSign, Sparkles, CheckCircle2 } from 'lucide-react';
+import { AlertCircle, ArrowLeft } from 'lucide-react';
 
 export const metadata: Metadata = {
   title: 'Earnings & RPM Disclaimer · YT Niches',

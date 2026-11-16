@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useSyncExternalStore } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Sparkles, Sun, Moon, BookOpen, Home, Info, Mail, Menu, X, Shield } from 'lucide-react';
+import { Sparkles, Sun, Moon, Hash, Home, Menu, X, Shield } from 'lucide-react';
 
 // The theme lives on <html data-theme>, set before hydration by the inline script in app/layout.tsx.
 const readTheme = () => (document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark') as 'light' | 'dark';
@@ -13,7 +13,7 @@ const subscribeTheme = (onChange: () => void) => {
   return () => obs.disconnect();
 };
 
-export default function Header() {
+export default function Header({ categories }: { categories: { name: string; slug: string }[] }) {
   const pathname = usePathname();
   const theme = useSyncExternalStore(subscribeTheme, readTheme, () => 'dark' as const);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -38,11 +38,10 @@ export default function Header() {
     document.documentElement.setAttribute('data-theme', newTheme);
   };
 
+  // Home plus one link per blog category (from published articles).
   const navLinks = [
     { href: '/', label: 'Home', icon: Home },
-    { href: '/blog', label: 'Blog', icon: BookOpen },
-    { href: '/about', label: 'About', icon: Info },
-    { href: '/contact', label: 'Contact', icon: Mail },
+    ...categories.map((c) => ({ href: `/blog/category/${c.slug}`, label: c.name, icon: Hash })),
   ];
   const mobileLinks = [...navLinks, { href: '/admin', label: 'Admin', icon: Shield }];
   const isActive = (href: string) => pathname === href || (href !== '/' && pathname.startsWith(href));
@@ -53,8 +52,8 @@ export default function Header() {
       <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:px-6">
 
         {/* Logo */}
-        <div className="flex items-center gap-6">
-          <Link href="/" onClick={closeMenu} className="flex items-center gap-2.5 group">
+        <div className="flex min-w-0 items-center gap-6">
+          <Link href="/" onClick={closeMenu} className="flex shrink-0 items-center gap-2.5 group">
             <div className="flex size-7 items-center justify-center rounded-lg bg-[var(--brand-accent)] text-white shadow-sm transition-transform group-hover:scale-105">
               <Sparkles className="size-4 fill-white" />
             </div>
@@ -64,14 +63,14 @@ export default function Header() {
           </Link>
 
           {/* Desktop Nav */}
-          <nav className="hidden md:flex items-center gap-1 text-[13.5px] font-medium">
+          <nav aria-label="Categories" className="hidden md:flex min-w-0 items-center gap-1 overflow-x-auto text-[13.5px] font-medium [scrollbar-width:none]">
             {navLinks.map((item) => {
               const Icon = item.icon;
               return (
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full transition-colors ${
+                  className={`inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap px-3 py-1.5 rounded-full transition-colors ${
                     isActive(item.href)
                       ? 'bg-[var(--bg-surface-2)] text-[var(--text-ink)] font-semibold shadow-sm'
                       : 'text-[var(--text-muted)] hover:text-[var(--text-ink)] hover:bg-[var(--bg-surface-2)]/60'

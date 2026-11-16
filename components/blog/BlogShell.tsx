@@ -57,7 +57,7 @@ export default function BlogShell({
       {categories.length > 0 && (
         <nav aria-label="Blog categories" className="mb-8 flex flex-wrap gap-2">
           <Link
-            href="/blog"
+            href="/"
             className={`rounded-full border px-3.5 py-1.5 text-[13px] font-semibold ${!activeSlug ? 'border-[var(--brand-accent)] bg-[var(--brand-accent)] text-white' : 'border-[var(--border-line)] text-[var(--text-muted)] hover:text-[var(--text-ink)]'}`}
           >
             All

@@ -6,6 +6,7 @@ import Footer from '@/components/layout/Footer';
 import { ToastProvider } from '@/components/ui/Toast';
 import Script from 'next/script';
 import { ADSENSE_CLIENT_ID } from '@/lib/site';
+import { getNavCategories } from '@/lib/nav';
 
 
 const fontSans = Geist({
@@ -47,11 +48,12 @@ export const metadata: Metadata = {
   }
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const categories = await getNavCategories();
   return (
     // suppressHydrationWarning: the inline script below sets the saved data-theme before React hydrates (no theme flash),
     // so this one attribute is expected to differ from the server HTML. Only applies to <html>'s own attributes.
@@ -81,7 +83,7 @@ export default function RootLayout({
       </head>
       <body className="flex min-h-screen flex-col">
         <ToastProvider>
-          <Header />
+          <Header categories={categories} />
           <main className="flex-1">{children}</main>
         {/* Google Analytics (gtag.js) */}
         <Script
@@ -108,7 +110,7 @@ export default function RootLayout({
           data-key="X2KvVQJKwkPEU/Yh6/8sLg"
         />
 
-          <Footer />
+          <Footer categories={categories} />
         </ToastProvider>
         {ADSENSE_CLIENT_ID && (
           // afterInteractive: loads after the page is interactive, so it doesn't block rendering (LCP/INP).

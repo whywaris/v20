@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { PenLine } from 'lucide-react';
 
-/** Shown on the homepage and /blog until the first article is published. */
+/** Shown on the homepage until the first article is published. */
 export default function BlogEmpty() {
   return (
     <div className="rounded-3xl border border-dashed border-[var(--border-line-strong)] px-6 py-16 text-center">

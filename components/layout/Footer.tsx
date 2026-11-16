@@ -7,13 +7,6 @@ type FooterLink = { label: string; href: string };
 
 const COLUMNS: { title: string; links: FooterLink[] }[] = [
   {
-    title: 'Read',
-    links: [
-      { label: 'All articles', href: '/blog' },
-      { label: 'Latest posts', href: '/' },
-    ],
-  },
-  {
     title: 'Company',
     links: [
       { label: 'About Us', href: '/about' },
@@ -31,7 +24,12 @@ const COLUMNS: { title: string; links: FooterLink[] }[] = [
   },
 ];
 
-export default function Footer() {
+export default function Footer({ categories }: { categories: { name: string; slug: string }[] }) {
+  // Blog categories first (same order as the navbar), then the fixed columns. No categories yet: no column.
+  const columns = [
+    ...(categories.length ? [{ title: 'Categories', links: categories.map((c) => ({ label: c.name, href: `/blog/category/${c.slug}` })) }] : []),
+    ...COLUMNS,
+  ];
   return (
     <footer className="w-full border-t border-[var(--border-line)] bg-[var(--bg-surface)] py-12 px-4 sm:px-6 transition-colors duration-200 mt-20">
       <div className="mx-auto max-w-7xl">
@@ -53,7 +51,7 @@ export default function Footer() {
           </div>
 
           {/* Link columns */}
-          {COLUMNS.map((col) => (
+          {columns.map((col) => (
             <nav key={col.title} aria-label={col.title}>
               <h2 className="font-semibold text-[13.5px] text-[var(--text-ink)] mb-3">{col.title}</h2>
               <ul className="space-y-1 text-[13px] text-[var(--text-muted)]">

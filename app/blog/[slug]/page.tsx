@@ -83,9 +83,8 @@ export default async function BlogPostPage({ params }: Props) {
                 '@type': 'BreadcrumbList',
                 itemListElement: [
                   { '@type': 'ListItem', position: 1, name: 'Home', item: `${SITE_URL}/` },
-                  { '@type': 'ListItem', position: 2, name: 'Blog', item: `${SITE_URL}/blog` },
-                  { '@type': 'ListItem', position: 3, name: post.category, item: `${SITE_URL}/blog/category/${post.categorySlug}` },
-                  { '@type': 'ListItem', position: 4, name: post.title, item: url },
+                  { '@type': 'ListItem', position: 2, name: post.category, item: `${SITE_URL}/blog/category/${post.categorySlug}` },
+                  { '@type': 'ListItem', position: 3, name: post.title, item: url },
                 ],
               },
             ]),
@@ -94,8 +93,6 @@ export default async function BlogPostPage({ params }: Props) {
 
         <nav aria-label="Breadcrumb" className="mb-6 flex flex-wrap items-center gap-2 text-xs text-[var(--text-muted)]">
           <Link href="/" className="hover:text-[var(--text-ink)]">Home</Link>
-          <span className="text-[var(--border-line-strong)]">/</span>
-          <Link href="/blog" className="hover:text-[var(--text-ink)]">Blog</Link>
           <span className="text-[var(--border-line-strong)]">/</span>
           <Link href={`/blog/category/${post.categorySlug}`} className="hover:text-[var(--text-ink)]">{post.category}</Link>
         </nav>
@@ -177,7 +174,7 @@ export default async function BlogPostPage({ params }: Props) {
         <section className="mx-auto mt-16 max-w-5xl rounded-3xl border border-[var(--border-line)] bg-[var(--bg-surface)] p-6 text-center sm:p-10">
           <h2 className="text-2xl font-bold text-[var(--text-ink)]">More guides for growing your channel</h2>
           <p className="mx-auto mt-2 max-w-lg text-[15px] text-[var(--text-muted)]">Niche ideas, RPM breakdowns and growth playbooks for faceless YouTube creators.</p>
-          <Link href="/blog" className="btn-accent mt-6 inline-flex h-11 items-center gap-2 rounded-full px-6 text-[14px]">
+          <Link href="/" className="btn-accent mt-6 inline-flex h-11 items-center gap-2 rounded-full px-6 text-[14px]">
             Read all articles <ArrowRight className="size-4" />
           </Link>
         </section>

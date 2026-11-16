@@ -1,14 +1,16 @@
 import { NextResponse } from 'next/server';
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, revalidateTag } from 'next/cache';
 import { requireAdmin } from '@/lib/admin';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { getUser } from '@/lib/supabase/server';
+import { POSTS_TAG } from '@/lib/nav';
 import { POST_COLUMNS, categorySlug, fromRow, validatePostInput, type PostRow } from '@/lib/posts';
 
 // Blog posts live in the Supabase `posts` table, so publishing works on the live site (Vercel can't write files).
 
 function refreshBlog(...slugs: string[]) {
-  revalidatePath('/blog', 'layout'); // the list, every article and category page
+  revalidateTag(POSTS_TAG, { expire: 0 }); // navbar categories
+  revalidatePath('/blog', 'layout'); // every article and category page
   revalidatePath('/'); // "Latest from the blog" on the homepage
   for (const s of slugs) revalidatePath(`/blog/${s}`);
   revalidatePath('/blog-sitemap.xml');

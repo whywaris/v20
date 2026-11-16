@@ -12,7 +12,7 @@ export type PostCardData = {
   coverImage: string;
 };
 
-/** Article card used on /blog, category pages and "related articles". `featured` is the large first card. */
+/** Article card used on the homepage, category pages and "related articles". `featured` is the large first card. */
 export default function PostCard({ post, featured = false }: { post: PostCardData; featured?: boolean }) {
   return (
     <article

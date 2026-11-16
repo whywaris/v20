@@ -6,7 +6,6 @@ export const revalidate = 86400;
 // Indexable top-level pages only. /admin is private and not listed.
 const PAGES: Omit<SitemapEntry, 'lastmod'>[] = [
   { path: '/', changefreq: 'daily', priority: 1.0 },
-  { path: '/blog', changefreq: 'daily', priority: 0.9 },
   { path: '/about', changefreq: 'monthly', priority: 0.6 },
   { path: '/contact', changefreq: 'monthly', priority: 0.6 },
   { path: '/privacy', changefreq: 'monthly', priority: 0.4 },

@@ -31,7 +31,7 @@ export default function AboutPage() {
           new creator can realistically achieve.
         </p>
         <p>
-          The <Link href="/blog">YT Niches blog</Link> focuses on what works for <strong>smaller channels</strong>: how to
+          The <Link href="/">YT Niches blog</Link> focuses on what works for <strong>smaller channels</strong>: how to
           pick a niche that pays, which formats suit faceless creators, how to grow from zero, and how channels turn views
           into income through ads, sponsors and their own products.
         </p>

@@ -1,7 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { Metadata } from 'next';
-import { FileText, ArrowLeft, CheckCircle2, AlertTriangle } from 'lucide-react';
+import { FileText, ArrowLeft } from 'lucide-react';
 
 export const metadata: Metadata = {
   title: 'Terms of Service · YT Niches',

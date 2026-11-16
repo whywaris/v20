@@ -41,7 +41,6 @@ export default async function BlogCategoryPage({ params }: Props) {
       categories={categories}
       activeSlug={category.slug}
       crumbs={[
-        { name: 'Blog', href: '/blog' },
         { name: category.name, href: `/blog/category/${category.slug}` },
       ]}
     >

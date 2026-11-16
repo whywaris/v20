@@ -12,10 +12,11 @@ const nextConfig: NextConfig = {
       { protocol: 'https', hostname: 'images.unsplash.com' },
     ],
   },
-  // Removed pages send visitors and Google to the blog instead of a 404: the old channel/niche/outlier
-  // directory (the site is blog-only now) and the four built-in template articles.
+  // Removed pages send visitors and Google to the homepage (which lists every article) instead of a 404:
+  // the /blog list page, the old channel/niche/outlier directory and the four built-in template articles.
   async redirects() {
     const removed = [
+      '/blog',
       '/channels', '/channel/:path*', '/niche', '/niche/:path*', '/outliers', '/swipe-file', '/saved', '/mcp',
       '/channels-sitemap.xml', '/niches-sitemap.xml',
       '/blog/top-high-rpm-youtube-niches-2026',
@@ -23,7 +24,7 @@ const nextConfig: NextConfig = {
       '/blog/viral-youtube-title-formulas-deconstructed',
       '/blog/monetizing-youtube-beyond-adsense-ebooks-funnels',
     ];
-    return removed.map((source) => ({ source, destination: '/blog', permanent: true }));
+    return removed.map((source) => ({ source, destination: '/', permanent: true }));
   },
   async headers() {
     return [
