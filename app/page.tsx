@@ -48,19 +48,6 @@ export default async function HomePage() {
           <p className="relative mx-auto mt-6 max-w-2xl text-[17px] leading-relaxed text-[var(--text-muted)] sm:text-lg">
             Practical guides on choosing a niche that pays, growing a faceless channel and turning views into income.
           </p>
-          {categories.length > 0 && (
-            <div className="relative mt-8 flex flex-wrap justify-center gap-2">
-              {categories.slice(0, 8).map((c) => (
-                <Link
-                  key={c.slug}
-                  href={`/blog/category/${c.slug}`}
-                  className="rounded-full border border-[var(--border-line)] bg-[var(--bg-surface)] px-3.5 py-1.5 text-[13px] font-semibold text-[var(--text-ink)] hover:border-[var(--brand-accent)] hover:text-[var(--brand-mark)]"
-                >
-                  {c.name}
-                </Link>
-              ))}
-            </div>
-          )}
         </section>
 
         <AdSlot format="horizontal" className="mb-10" />

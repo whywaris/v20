@@ -3,6 +3,8 @@ import { Metadata } from 'next';
 import BlogList from '@/components/blog/BlogList';
 import BlogShell from '@/components/blog/BlogShell';
 import { toCard } from '@/components/blog/PostCard';
+import { categoryContent } from '@/lib/category-content';
+import { renderArticle } from '@/lib/markdown';
 import { categoriesOf, getPublishedPosts } from '@/lib/posts';
 import { SITE_URL } from '@/lib/site';
 
@@ -25,7 +27,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { category } = found;
   return {
     title: `${category.name} Articles · YT Niches Blog`,
-    description: `${category.count} article${category.count === 1 ? '' : 's'} on ${category.name.toLowerCase()} for small YouTube channels: guides, data and case studies.`,
+    description:
+      categoryContent(category.slug)?.intro ??
+      `${category.count} article${category.count === 1 ? '' : 's'} on ${category.name.toLowerCase()} for small YouTube channels: guides, data and case studies.`,
     alternates: { canonical: `${SITE_URL}/blog/category/${category.slug}` },
   };
 }
@@ -34,10 +38,11 @@ export default async function BlogCategoryPage({ params }: Props) {
   const found = await load((await params).category);
   if (!found) notFound();
   const { category, categories, posts } = found;
+  const content = categoryContent(category.slug);
   return (
     <BlogShell
       title={category.name}
-      description={`${category.count} article${category.count === 1 ? '' : 's'} in ${category.name}.`}
+      description={content?.intro ?? `${category.count} article${category.count === 1 ? '' : 's'} in ${category.name}.`}
       categories={categories}
       activeSlug={category.slug}
       crumbs={[
@@ -45,6 +50,11 @@ export default async function BlogCategoryPage({ params }: Props) {
       ]}
     >
       <BlogList posts={posts.map(toCard)} featureFirst={false} />
+      {content && (
+        <section className="mt-14 max-w-3xl border-t border-[var(--border-line)] pt-10">
+          <div className="prose-post text-[var(--text-ink)]" dangerouslySetInnerHTML={{ __html: renderArticle(content.body).html }} />
+        </section>
+      )}
     </BlogShell>
   );
 }

@@ -90,3 +90,14 @@ test('mentionsEarnings and RPM table notes', () => {
   assert.match(addRpmTableNotes(rpmTable), /<\/table><p class="table-note">Estimates, not guarantees/);
   assert.equal(addRpmTableNotes(other), other);
 });
+
+test('category content: keys are real category slugs, bodies stay under 500 words', async () => {
+  const { CATEGORY_CONTENT } = await import('./category-content.ts');
+  const { categorySlug } = await import('./posts.ts');
+  for (const name of ['Faceless', 'Monetization', 'Niche Research', 'Outlier Strategy']) {
+    const c = CATEGORY_CONTENT[categorySlug(name)];
+    assert.ok(c, `missing content for ${name}`);
+    assert.ok(c.body.split(/\s+/).length <= 500, `${name} body over 500 words`);
+    assert.ok(c.intro.length <= 170, `${name} intro too long for a meta description`);
+  }
+});

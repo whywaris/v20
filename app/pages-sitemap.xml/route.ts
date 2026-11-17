@@ -1,4 +1,5 @@
 import { BUILD_TIME, urlsetXml, xmlResponse, type SitemapEntry } from '@/lib/sitemap';
+import { AUTHOR_PATH } from '@/lib/site';
 
 export const dynamic = 'force-static';
 export const revalidate = 86400;
@@ -8,6 +9,7 @@ const PAGES: Omit<SitemapEntry, 'lastmod'>[] = [
   { path: '/', changefreq: 'daily', priority: 1.0 },
   { path: '/about', changefreq: 'monthly', priority: 0.6 },
   { path: '/contact', changefreq: 'monthly', priority: 0.6 },
+  { path: AUTHOR_PATH, changefreq: 'weekly', priority: 0.6 },
   { path: '/privacy', changefreq: 'monthly', priority: 0.4 },
   { path: '/terms', changefreq: 'monthly', priority: 0.4 },
   { path: '/disclaimer', changefreq: 'monthly', priority: 0.4 },

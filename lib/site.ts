@@ -7,10 +7,10 @@ export const OPERATOR_NAME = 'Waris Jamil';
 export const NOT_AFFILIATED =
   'YT Niches is an independent blog, not affiliated with Google LLC or YouTube.';
 
-// About the author (About page and the author box on every article).
+// About the author (author page, About page and the author box on every article).
+export const AUTHOR_PATH = '/author/waris-jamil';
 export const AUTHOR_LOCATION = 'Multan, Pakistan';
 export const AUTHOR_BIO =
-  'Waris Jamil is based in Multan, Pakistan. He works as a freelancer with YouTube creators and built ytcrew.com, a free YouTube creator toolkit.';
-// TODO(Waris): paste a public photo URL and your LinkedIn profile URL. Each one only shows once it's filled in.
-export const AUTHOR_PHOTO_URL = '';
-export const AUTHOR_LINKEDIN_URL = '';
+  'YouTuber, content creator and founder of YT Niches, with 5 years in YouTube content creation and YouTube automation.';
+export const AUTHOR_PHOTO_URL = 'https://pub-fd880e99144d4575846bfb03d99d3d29.r2.dev/1715155887317.jfif';
+export const AUTHOR_LINKEDIN_URL = 'https://www.linkedin.com/in/waris-jamil-3b674520/';

@@ -10,7 +10,7 @@ import ReadingProgress from '@/components/blog/ReadingProgress';
 import ShareButtons from '@/components/blog/ShareButtons';
 import { renderArticle, splitForAd } from '@/lib/markdown';
 import { getPublishedPosts, mentionsEarnings, relatedPosts } from '@/lib/posts';
-import { OPERATOR_NAME, SITE_URL } from '@/lib/site';
+import { AUTHOR_PATH, OPERATOR_NAME, SITE_URL } from '@/lib/site';
 
 // Refreshed every 5 minutes; saving a post in /admin refreshes it immediately.
 export const revalidate = 300;
@@ -77,7 +77,7 @@ export default async function BlogPostPage({ params }: Props) {
                 datePublished: post.publishedAt,
                 dateModified: post.updatedAt,
                 articleSection: post.category,
-                author: { '@type': 'Person', name: OPERATOR_NAME, url: `${SITE_URL}/about` },
+                author: { '@type': 'Person', name: OPERATOR_NAME, url: `${SITE_URL}${AUTHOR_PATH}` },
                 publisher: { '@type': 'Organization', name: 'YT Niches', url: SITE_URL },
                 mainEntityOfPage: url,
               },
@@ -107,10 +107,10 @@ export default async function BlogPostPage({ params }: Props) {
           <h1 className="mt-4 text-3xl font-bold leading-[1.12] tracking-tight text-[var(--text-ink)] sm:text-5xl">{post.title}</h1>
           {post.excerpt && <p className="mt-4 text-[18px] leading-relaxed text-[var(--text-muted)]">{post.excerpt}</p>}
           <div className="mt-6 flex flex-wrap items-center gap-x-4 gap-y-2 border-b border-[var(--border-line)] pb-6 text-[13px] text-[var(--text-muted)]">
-            <span className="flex items-center gap-2">
+            <Link href={AUTHOR_PATH} rel="author" className="flex items-center gap-2 hover:underline">
               <AuthorAvatar className="size-7 text-[11px]" />
               <span className="font-semibold text-[var(--text-ink)]">{OPERATOR_NAME}</span>
-            </span>
+            </Link>
             <span className="flex items-center gap-1.5"><Calendar className="size-3.5" /> Published <time dateTime={post.publishedAt ?? undefined}>{post.date}</time></span>
             {updated !== post.date && (
               <span className="flex items-center gap-1.5">Updated <time dateTime={post.updatedAt}>{updated}</time></span>

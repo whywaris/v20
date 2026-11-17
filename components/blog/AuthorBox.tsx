@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { AUTHOR_BIO, AUTHOR_LINKEDIN_URL, AUTHOR_PHOTO_URL, OPERATOR_NAME } from '@/lib/site';
+import { AUTHOR_BIO, AUTHOR_LINKEDIN_URL, AUTHOR_PATH, AUTHOR_PHOTO_URL, OPERATOR_NAME } from '@/lib/site';
 
 const initials = OPERATOR_NAME.split(' ').map((w) => w[0]).join('');
 
@@ -22,10 +22,10 @@ export default function AuthorBox({ heading = 'Written by' }: { heading?: string
       <AuthorAvatar />
       <div className="flex-1">
         <div className="text-[13px] text-[var(--text-muted)]">{heading}</div>
-        <div className="font-bold text-[var(--text-ink)]">{OPERATOR_NAME}</div>
+        <Link href={AUTHOR_PATH} rel="author" className="font-bold text-[var(--text-ink)] hover:underline">{OPERATOR_NAME}</Link>
         <p className="mt-1 text-[14px] text-[var(--text-muted)]">
           {AUTHOR_BIO}{' '}
-          <Link href="/about" className="font-semibold text-[var(--brand-mark)] hover:underline">About us</Link>
+          <Link href={AUTHOR_PATH} className="font-semibold text-[var(--brand-mark)] hover:underline">All articles</Link>
           {AUTHOR_LINKEDIN_URL && (
             <>
               {' · '}
